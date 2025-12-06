@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, Suspense, useEffect } from 'react'
+import React from 'react'
+import { useState, Suspense, useEffect, startTransition } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
@@ -13,7 +14,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ExternalLink, Share2 } from 'lucide-react'
 
-export default function PersonalizationPage() {
+function PersonalizationContent() {
   const searchParams = useSearchParams()
   const colorParam = searchParams.get('color')
   
@@ -24,7 +25,9 @@ export default function PersonalizationPage() {
   // Update color from URL params
   useEffect(() => {
     if (colorParam) {
-      setCurrentColor(colorParam)
+      startTransition(() => {
+        setCurrentColor(colorParam)
+      })
     }
   }, [colorParam])
 
@@ -32,12 +35,17 @@ export default function PersonalizationPage() {
   useEffect(() => {
     try {
       const canvas = document.createElement('canvas')
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+      const gl = canvas.getContext('webgl')
       if (!gl) {
-        setWebglError(true)
+        startTransition(() => {
+          setWebglError(true)
+        })
       }
     } catch (e) {
-      setWebglError(true)
+      console.error(e)
+      startTransition(() => {
+        setWebglError(true)
+      })
     }
   }, [])
 
@@ -72,12 +80,12 @@ export default function PersonalizationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-gray-900 flex flex-col">
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 flex flex-col">
       <Navigation />
 
       <main className="flex-1 flex flex-col lg:flex-row pt-16">
         {/* 3D Scene - Left Side */}
-        <div className="flex-1 lg:w-[65%] relative">
+        <div className="flex-1 lg:w-[72%] relative">
           <div className="absolute inset-0">
             {use2DFallback ? (
               <SimpleVespaViewer color={currentColor} />
@@ -86,7 +94,7 @@ export default function PersonalizationPage() {
             ) : (
               <Suspense
                 fallback={
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-gray-900">
+                  <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-slate-950 via-slate-900 to-gray-900">
                     <div className="text-white/60 text-center">
                       <div className="w-12 h-12 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
                       <p className="font-semibold mb-2">Chargement de votre Vespa...</p>
@@ -111,7 +119,7 @@ export default function PersonalizationPage() {
           {/* Product Match Banner */}
           {matchingProduct && similarity > 70 && (
             <div className="absolute top-4 left-4 right-4 lg:left-auto lg:right-4 lg:max-w-sm">
-              <div className="bg-gradient-to-r from-amber-500/90 to-orange-500/90 backdrop-blur-sm rounded-xl p-4 shadow-2xl border border-white/20">
+              <div className="bg-linear-to-r from-amber-500/90 to-orange-500/90 backdrop-blur-sm rounded-xl p-4 shadow-2xl border border-white/20">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -147,8 +155,8 @@ export default function PersonalizationPage() {
         </div>
 
         {/* Color Picker Panel - Right Side */}
-        <div className="lg:w-[35%] h-[50vh] lg:h-auto border-t lg:border-t-0 lg:border-l border-white/10">
-          <div className="h-full bg-gradient-to-br from-slate-900/95 to-gray-900/95 backdrop-blur-xl overflow-auto">
+        <div className="lg:w-[28%] h-[50vh] lg:h-auto border-t lg:border-t-0 lg:border-l border-white/10">
+          <div className="h-full bg-linear-to-br from-slate-900/95 to-gray-900/95 backdrop-blur-xl">
             <ColorPickerPanel currentColor={currentColor} onColorChange={setCurrentColor} />
           </div>
         </div>
@@ -168,13 +176,13 @@ export default function PersonalizationPage() {
               <Button
                 asChild
                 variant="outline"
-                className="border-white/30 text-white hover:bg-white/10"
+                className="border-white/30 text-black hover:bg-amber-400 hover:border-amber-400"
               >
                 <Link href="/collection">Voir la collection</Link>
               </Button>
               <Button
                 asChild
-                className="bg-gradient-to-r from-amber-400 to-orange-500 text-black font-bold"
+                className="bg-linear-to-r from-amber-400 to-orange-500 text-black font-bold"
               >
                 <Link href="/#contact">Nous contacter</Link>
               </Button>
@@ -185,6 +193,27 @@ export default function PersonalizationPage() {
 
       <Footer />
     </div>
+  )
+}
+
+export default function PersonalizationPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 flex flex-col">
+          <Navigation />
+          <main className="flex-1 flex items-center justify-center pt-16">
+            <div className="text-white/60 text-center">
+              <div className="w-12 h-12 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="font-semibold">Chargement...</p>
+            </div>
+          </main>
+          <Footer />
+        </div>
+      }
+    >
+      <PersonalizationContent />
+    </Suspense>
   )
 }
 

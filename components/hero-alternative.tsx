@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -37,9 +38,9 @@ export function HeroAlternative() {
           </div>
           
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-black leading-[1.1]">
-            Vivez l'élégance
+            Vivez l&apos;élégance
             <span className="block bg-linear-to-r from-amber-400 via-rose-400 to-amber-400 bg-clip-text text-transparent">
-              à l'italienne
+              à l&apos;italienne
             </span>
           </h1>
           
@@ -56,7 +57,7 @@ export function HeroAlternative() {
             <div className="w-1 h-1 rounded-full bg-white/30" />
             <div className="flex items-center gap-2">
               <Clock size={16} />
-              <span>2 réservées aujourd'hui</span>
+              <span>2 réservées aujourd&apos;hui</span>
             </div>
           </div>
         </div>

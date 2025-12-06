@@ -1,3 +1,5 @@
+import React from 'react'
+
 import { Hero } from '@/components/hero'
 import { VespaProducts } from '@/components/vespa-products'
 import { VespaShowcase } from '@/components/vespa-showcase'

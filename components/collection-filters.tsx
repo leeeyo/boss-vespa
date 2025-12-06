@@ -1,7 +1,8 @@
 'use client'
 
+import React from 'react' 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, useEffect, useRef, useTransition } from 'react'
+import { useState, useEffect, useRef} from 'react'
 import { Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,7 +19,6 @@ type CollectionFiltersProps = {
 export function CollectionFilters({ colors, engines, features, priceRange }: CollectionFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [isPending, startTransition] = useTransition()
   const isInitialMount = useRef(true)
 
   // Initialize state from URL params
@@ -62,9 +62,7 @@ export function CollectionFilters({ colors, engines, features, priceRange }: Col
       
       // Only push if URL actually changed
       if (window.location.pathname + window.location.search !== newUrl) {
-        startTransition(() => {
-          router.push(newUrl, { scroll: false })
-        })
+        router.push(newUrl, { scroll: false })
       }
     }, 300) // Debounce for 300ms
 
@@ -74,19 +72,19 @@ export function CollectionFilters({ colors, engines, features, priceRange }: Col
 
   const handleColorToggle = (color: string) => {
     setSelectedColors((prev) =>
-      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]
+      prev.includes(color) ? prev.filter((c: string | number) => c !== color) : [...prev, color]
     )
   }
 
   const handleEngineToggle = (engine: string) => {
     setSelectedEngines((prev) =>
-      prev.includes(engine) ? prev.filter((e) => e !== engine) : [...prev, engine]
+      prev.includes(engine) ? prev.filter((e: string | number) => e !== engine) : [...prev, engine]
     )
   }
 
   const handleFeatureToggle = (feature: string) => {
     setSelectedFeatures((prev) =>
-      prev.includes(feature) ? prev.filter((f) => f !== feature) : [...prev, feature]
+      prev.includes(feature) ? prev.filter((f: string | number ) => f !== feature) : [...prev, feature]
     )
   }
 
@@ -98,9 +96,7 @@ export function CollectionFilters({ colors, engines, features, priceRange }: Col
     setMinPrice(priceRange.min)
     setMaxPrice(priceRange.max)
     isInitialMount.current = true // Reset to prevent URL update
-    startTransition(() => {
-      router.push('/collection')
-    })
+    router.push('/collection')
   }
 
   const hasActiveFilters =
@@ -141,7 +137,7 @@ export function CollectionFilters({ colors, engines, features, priceRange }: Col
             type="text"
             placeholder="Nom ou modèle..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
             className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-amber-400/50"
           />
         </div>
@@ -156,7 +152,7 @@ export function CollectionFilters({ colors, engines, features, priceRange }: Col
               type="number"
               placeholder="Min"
               value={minPrice}
-              onChange={(e) => setMinPrice(Number(e.target.value))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMinPrice(Number(e.target.value))}
               min={priceRange.min}
               max={priceRange.max}
               className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-amber-400/50"
@@ -166,7 +162,7 @@ export function CollectionFilters({ colors, engines, features, priceRange }: Col
               type="number"
               placeholder="Max"
               value={maxPrice}
-              onChange={(e) => setMaxPrice(Number(e.target.value))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMaxPrice(Number(e.target.value))}
               min={priceRange.min}
               max={priceRange.max}
               className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-amber-400/50"

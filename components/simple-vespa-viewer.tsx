@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import Image from 'next/image'
+import React from 'react'
 import { Button } from './ui/button'
 import { Palette } from 'lucide-react'
 
