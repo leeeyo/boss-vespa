@@ -10,8 +10,8 @@ export function Location() {
   return (
     <section id="contact" className="py-20 px-4 bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white">
       <div className="container mx-auto">
-        <div className="text-center mb-12 space-y-3">
-          <h2 className="text-4xl md:text-5xl font-bold bg-linear-to-r from-amber-400 via-rose-400 to-sky-400 bg-clip-text text-transparent">
+        <div className="text-center mb-12 space-y-3 overflow-visible">
+          <h2 className="text-4xl md:text-5xl font-bold bg-linear-to-r from-amber-400 via-rose-400 to-sky-400 bg-clip-text text-transparent overflow-visible whitespace-normal wrap-break-words px-2 py-1">
             Notre Magasin
           </h2>
           <div className="space-y-1 text-lg text-white/80 max-w-3xl mx-auto">

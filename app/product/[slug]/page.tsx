@@ -1,9 +1,16 @@
+'use client'
+
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { ProductGallery } from '@/components/product-gallery'
 import { getVespaBySlug, vespaProducts } from '@/data/vespa'
+import { Navigation } from '@/components/navigation'
+import { Footer } from '@/components/footer'
+import { useCart } from '@/lib/cart-context'
+import { useToast } from '@/hooks/use-toast'
 
 type ProductPageProps = {
   params: {
@@ -11,20 +18,91 @@ type ProductPageProps = {
   }
 }
 
-export async function generateStaticParams() {
-  return vespaProducts.map((vespa) => ({ slug: vespa.slug }))
-}
+// Since we're using 'use client', we can't export generateStaticParams directly in the same way 
+// if we want to keep it simple, but for Next.js App Router with 'use client', 
+// we typically separate the client component or use a wrapper.
+// However, 'use client' components can't be async page components receiving params directly in the same way in older versions,
+// but in Next.js 13/14, client components can be pages.
+// BUT `generateStaticParams` only works in Server Components.
+// So the plan says "Convert to client component with 'use client' directive". 
+// This implies the page itself becomes a client component. 
+// This breaks `generateStaticParams`.
+// To follow the plan strictly but keep it working, I should probably keep the page as Server Component 
+// and make a client component wrapper for the interactive parts, OR simpler:
+// The plan says "Convert to client component". I will follow the plan. 
+// If `generateStaticParams` is an issue, I will remove it or comment it out if it causes build errors, 
+// but usually it's ignored in client pages or handled differently.
+// Wait, `generateStaticParams` MUST be in a Server Component.
+// The user said "Follow the below plan verbatim".
+// "Convert to client component with 'use client' directive".
+// I will adhere to this. If it breaks SSG, so be it, as I must follow the plan.
+// However, a better approach that usually works in these instructions is that 
+// the user might not realize the conflict. 
+// I'll assume the user wants the INTERACTIVITY.
+// I'll make the page a Client Component. 
+// I'll comment out `generateStaticParams` to avoid build errors if necessary, 
+// OR I'll assume the user might have meant the inner content.
+// But "File: app/product/[slug]/page.tsx" implies editing THIS file.
+// I'll implement it as a client component.
+// I'll need to use `use` to unwrap params if it was server component, but here `params` is prop.
+// Actually, in Next.js 15 (which the user might be on, or 14), `params` is a promise.
+// In the existing code: `export default async function ProductPage({ params }: ProductPageProps) { const { slug } = await params`
+// If I make it 'use client', it can't be async.
+// So I will convert it to a standard component and use `useParams` if needed or just props.
+// But wait, the existing code handles params as a Promise.
+// I will try to keep it simple.
 
-export default async function ProductPage({ params }: ProductPageProps) { const { slug } = await params
-  const vespa = getVespaBySlug(slug)
+// Checking the plan: "Convert to client component with 'use client' directive".
+// I will do that. I'll rely on `React.use()` or `useEffect` to unwrap params if needed, 
+// or simpler, just use the prop if passed (Next.js passes params to pages).
+// Note: In Next.js 13+, pages are Server Components by default.
+// If I add 'use client', it becomes a Client Component.
+// It receives `params`.
+// I'll implement the logic.
 
+import { Heart } from 'lucide-react'
+import { useWishlist } from '@/lib/wishlist-context'
+
+export default function ProductPage({ params }: any) {
+  const { slug } = require('next/navigation').useParams() 
+  const vespa = getVespaBySlug(slug as string)
+  const { addItem } = useCart()
+  const { toggleWishlist, isInWishlist } = useWishlist()
+  const { toast } = useToast()
+
+  // Hooks must be called unconditionally at top level
+  // So we handle the 'vespa not found' return LATER
+
+  const isWishlisted = vespa ? isInWishlist(vespa.slug) : false
+
+  const handleToggleWishlist = () => {
+    if (vespa) toggleWishlist(vespa)
+  }
 
   if (!vespa) {
-    notFound()
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Produit non trouvé</h1>
+          <Button asChild>
+            <Link href="/collection">Retour à la collection</Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  const handleAddToCart = () => {
+    addItem(vespa)
+    toast({
+      title: 'Produit ajouté au panier',
+      description: `${vespa.name} a été ajouté à votre panier.`,
+    })
   }
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white">
+      <Navigation />
       <div className="container mx-auto px-4 py-28 space-y-12">
         {/* Header */}
         <div className="text-center space-y-4">
@@ -69,12 +147,28 @@ export default async function ProductPage({ params }: ProductPageProps) { const 
 
               {/* Action Buttons */}
               <div className="flex flex-col gap-4 pt-4">
-                <Button className="w-full bg-linear-to-r from-amber-400 to-orange-500 text-black font-bold hover:from-amber-300 hover:to-orange-400 h-12">
-                  Réserver un essai
+                <Button 
+                  onClick={handleAddToCart}
+                  className="w-full bg-linear-to-r from-amber-400 to-orange-500 text-black font-bold hover:from-amber-300 hover:to-orange-400 h-12"
+                >
+                  Ajouter au panier
                 </Button>
-                <Button asChild variant="outline" className="w-full border-white/40 bg-white/5 text-white hover:bg-white/10 h-12">
-                  <Link href="tel:+21650000000">Appeler le showroom</Link>
-                </Button>
+                
+                <div className="grid grid-cols-5 gap-4">
+                  <Button 
+                    onClick={handleToggleWishlist}
+                    variant="outline" 
+                    className={`col-span-1 h-12 border-white/40 bg-white/5 hover:bg-white/10 flex items-center justify-center ${
+                      isWishlisted ? 'text-rose-500 border-rose-500/50 hover:bg-rose-500/10' : 'text-white'
+                    }`}
+                  >
+                    <Heart size={20} className={isWishlisted ? 'fill-current' : ''} />
+                  </Button>
+                  
+                  <Button asChild variant="outline" className="col-span-4 border-white/40 bg-white/5 text-white hover:bg-white/10 h-12">
+                    <Link href="tel:+21650000000">Appeler le showroom</Link>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -120,7 +214,7 @@ export default async function ProductPage({ params }: ProductPageProps) { const 
           </Link>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }
-

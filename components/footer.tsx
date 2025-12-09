@@ -14,20 +14,17 @@ export function Footer() {
             <p className="text-white/90 mb-2">
               Ventes, personnalisation atelier, accessoires et livraison nationale.
             </p>
-            <p className="text-sm text-white/80">
-              Sales, bespoke workshop, matching gear and nationwide delivery.
-            </p>
           </div>
 
           <div>
-            <h4 className="text-lg font-bold mb-4">Liens / Quick Links</h4>
+            <h4 className="text-lg font-bold mb-4">Liens</h4>
             <ul className="space-y-2 text-white/90">
               {[
-                { label: 'Accueil · Home', href: '#home' },
-                { label: 'Nos Vespas · Our Vespas', href: '#vespas' },
-                { label: 'Personnalisation · Custom', href: '#custom' },
-                { label: 'Livraison · Delivery', href: '#delivery' },
-                { label: 'Contact', href: '#contact' },
+                { label: 'Accueil', href: '#home' },
+                { label: 'Nos Vespas', href: '#vespas' },
+                { label: 'Personnalisation', href: '#custom' },
+                { label: 'Livraison', href: '/livraison' },
+                { label: 'Contact', href: '/contact' },
               ].map((link) => (
                 <li key={link.href}>
                   <a href={link.href} className="hover:text-white transition-colors">
@@ -69,7 +66,7 @@ export function Footer() {
 
         <div className="border-t border-white/20 pt-8 text-center text-sm text-white/80">
           <p>
-            &copy; {new Date().getFullYear()} Boss Vespa — Tous droits réservés · All rights reserved.
+            &copy; {new Date().getFullYear()} Boss Vespa — Tous droits réservés.
           </p>
         </div>
       </div>

@@ -6,11 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
 import accessory1 from '@/public/images/accessory1.png'
-import green3 from '@/public/images/green3.png'
 import heroStill from '@/public/images/hero.jpg'
-import showcase2 from '@/public/images/showcase2.jpg'
 import showcase5 from '@/public/images/showcase5.png'
-import white2 from '@/public/images/white2.jpeg'
 
 const vespas = [
   {
@@ -20,28 +17,7 @@ const vespas = [
     description: 'Carénages satinés, pare-brise sport et sellerie sur-mesure.',
     tag: 'Custom Shop',
   },
-  {
-    image: showcase2,
-    title: 'Collection Showroom',
-    color: 'Palette complète disponible',
-    description: 'Sprint, Primavera, GTS – toutes prêtes à rouler.',
-    tag: 'Showroom',
-  },
-  {
-    image: white2,
-    title: 'Primavera Classica',
-    color: 'Blanc nacré',
-    description: 'Le look intemporel italien avec équipement premium.',
-    tag: 'Iconique',
-  },
-  {
-    image: green3,
-    title: 'Sprint Jungle',
-    color: 'Vert sauge',
-    description: 'Guidons noirs, jantes sombres et détails satinés.',
-    tag: 'Édition limitée',
-  },
-  {
+{
     image: accessory1,
     title: 'Accessoires assortis',
     color: 'Casques, bagagerie, pièces d’origine',
@@ -61,8 +37,8 @@ export function VespaShowcase() {
   return (
     <section id="vespas" className="py-20 px-4 bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white">
       <div className="container mx-auto">
-        <div className="text-center mb-12 space-y-4">
-          <h2 className="text-4xl md:text-5xl font-bold bg-linear-to-r from-amber-400 via-rose-400 to-sky-400 bg-clip-text text-transparent">
+        <div className="text-center mb-12 space-y-4 overflow-visible">
+          <h2 className="text-4xl md:text-5xl font-bold bg-linear-to-r from-amber-400 via-rose-400 to-sky-400 bg-clip-text text-transparent overflow-visible whitespace-normal wrap-break-word px-2 py-1">
             Nos Vespas
           </h2>
           <p className="text-lg text-white/80 max-w-2xl mx-auto">

@@ -4,22 +4,25 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 
-import { Button } from '@/components/ui/button'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, ShoppingCart, Heart } from 'lucide-react'
+import { useCart } from '@/lib/cart-context'
+import { useWishlist } from '@/lib/wishlist-context'
 
 const navItems = [
   { id: 'home', fr: 'Accueil', en: 'Home', href: '/' },
   { id: 'vespas', fr: 'Nos Vespas', en: 'Our Vespas', href: '/collection' },
   { id: 'custom', fr: 'Personnalisation', en: 'Customization', href: '/personalization' },
-  { id: 'delivery', fr: 'Livraison', en: 'Delivery', href: '#delivery' },
-  { id: 'contact', fr: 'Contact', en: 'Contact', href: '#contact' },
+  { id: 'delivery', fr: 'Livraison', en: 'Delivery', href: '/livraison' },
+  { id: 'contact', fr: 'Contact', en: 'Contact', href: '/contact' },
 ]
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
-  const [lang, setLang] = useState<'fr' | 'en'>('fr')
-
-  const toggleLang = () => setLang((prev) => (prev === 'fr' ? 'en' : 'fr'))
+  const [lang] = useState<'fr' | 'en'>('fr')
+  const { getItemCount } = useCart()
+  const itemCount = getItemCount()
+  const { getWishlistCount } = useWishlist()
+  const wishlistCount = getWishlistCount()
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-linear-to-r from-slate-950 via-slate-900 to-gray-900 text-white shadow-[0_12px_32px_rgba(0,0,0,0.45)]">
@@ -36,19 +39,6 @@ export function Navigation() {
           <div className="hidden md:flex items-center gap-6">
             {navItems.map((item) => {
               const text = lang === 'fr' ? item.fr : item.en
-              const isExternal = item.href.startsWith('#')
-              
-              if (isExternal) {
-                return (
-                  <a
-                    key={item.id}
-                    href={item.href}
-                    className="text-sm font-semibold text-white/90 hover:text-amber-300 transition-colors"
-                  >
-                    {text}
-                  </a>
-                )
-              }
               
               return (
                 <Link
@@ -60,14 +50,31 @@ export function Navigation() {
                 </Link>
               )
             })}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleLang}
-              className="ml-4 border-white/30 text-white bg-linear-to-b from-white/15 to-white/5 hover:from-white/25 hover:to-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)] transition-all"
+            <Link
+              href="/wishlist"
+              className="ml-4 rounded-full border border-white/30 p-2 text-white bg-linear-to-b from-white/15 to-white/5 hover:from-white/25 hover:to-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)] transition-all flex items-center justify-center relative"
+              aria-label="Liste de souhaits"
             >
-              {lang === 'fr' ? '🇫🇷 FR' : '🇬🇧 EN'}
-            </Button>
+              <Heart size={20} />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-linear-to-r from-rose-400 to-pink-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
+            <Link
+              href="/cart"
+              className="ml-4 rounded-full border border-white/30 p-2 text-white bg-linear-to-b from-white/15 to-white/5 hover:from-white/25 hover:to-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)] transition-all flex items-center justify-center relative"
+              aria-label="Panier"
+            >
+              <ShoppingCart size={20} />
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-linear-to-r from-amber-400 to-orange-500 text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
           </div>
 
           <button
@@ -83,20 +90,6 @@ export function Navigation() {
           <div className="md:hidden py-4 border-t border-white/20 space-y-2">
             {navItems.map((item) => {
               const text = lang === 'fr' ? item.fr : item.en
-              const isExternal = item.href.startsWith('#')
-              
-              if (isExternal) {
-                return (
-                  <a
-                    key={item.id}
-                    href={item.href}
-                    className="block py-2 text-sm font-semibold text-white/90 hover:text-amber-300 transition-colors"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {text}
-                  </a>
-                )
-              }
               
               return (
                 <Link
@@ -109,14 +102,37 @@ export function Navigation() {
                 </Link>
               )
             })}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleLang}
-              className="mt-4 w-full border-white/30 text-white bg-linear-to-b from-white/15 to-white/5 hover:from-white/25 hover:to-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)] transition-all"
+            <Link
+              href="/wishlist"
+              className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-white/30 p-3 text-white bg-linear-to-b from-white/15 to-white/5 hover:from-white/25 hover:to-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)] transition-all relative"
+              onClick={() => setIsOpen(false)}
             >
-              {lang === 'fr' ? '🇫🇷 Français' : '🇬🇧 English'}
-            </Button>
+              <div className="relative">
+                <Heart size={20} />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-linear-to-r from-rose-400 to-pink-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
+              </div>
+              <span className="text-sm font-semibold">Favoris</span>
+            </Link>
+
+            <Link
+              href="/cart"
+              className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-white/30 p-3 text-white bg-linear-to-b from-white/15 to-white/5 hover:from-white/25 hover:to-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)] transition-all relative"
+              onClick={() => setIsOpen(false)}
+            >
+              <div className="relative">
+                <ShoppingCart size={20} />
+                {itemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-linear-to-r from-amber-400 to-orange-500 text-black text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {itemCount}
+                  </span>
+                )}
+              </div>
+              <span className="text-sm font-semibold">Panier</span>
+            </Link>
           </div>
         )}
       </div>

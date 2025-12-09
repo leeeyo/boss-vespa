@@ -13,9 +13,9 @@ export function VespaProducts() {
       className="py-20 px-4 bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white border-y border-white/5"
     >
       <div className="container mx-auto">
-        <div className="mb-12 flex flex-col items-center gap-4 text-center">
+        <div className="mb-12 flex flex-col items-center gap-4 text-center overflow-visible">
           <p className="text-xs uppercase tracking-[0.5em] text-amber-300">Nouveautés</p>
-          <h2 className="text-4xl md:text-5xl font-black bg-linear-to-r from-amber-400 via-rose-400 to-sky-400 bg-clip-text text-transparent">
+          <h2 className="text-4xl md:text-5xl font-black bg-linear-to-r from-amber-400 via-rose-400 to-sky-400 bg-clip-text text-transparent overflow-visible whitespace-normal wrap-break-words px-2 py-1">
             Vespas Signature
           </h2>
           <p className="text-white/80 max-w-2xl">
