@@ -1,4 +1,8 @@
-import { vespaProducts, VespaProduct } from '@/data/vespa'
+import { VespaProduct } from '@/data/vespa'
+
+// Vespa model types
+export const VESPA_MODELS = ['GTS', 'GTV', 'Primavera', 'Sprint', 'Snake'] as const
+export type VespaModel = typeof VESPA_MODELS[number]
 
 // Color name to hex mapping for Vespa products
 const COLOR_MAP: Record<string, string> = {
@@ -11,6 +15,12 @@ const COLOR_MAP: Record<string, string> = {
   'noir': '#1a1a1a',
   'gris': '#898989',
   'orange': '#ff6b35',
+  'vert': '#3d7c4a',
+  'violet': '#581c87',
+  'rose': '#fda4af',
+  'bordeaux': '#7f1d1d',
+  'beige': '#d4c4a8',
+  'crème': '#fef3c7',
 }
 
 /**
@@ -42,9 +52,14 @@ function colorDistance(hex1: string, hex2: string): number {
 }
 
 /**
- * Extract hex color from product color name
+ * Extract hex color from product color name or return hex if already hex
  */
 function getHexFromColorName(colorName: string): string | null {
+  // If it's already a hex color, return it
+  if (colorName.startsWith('#')) {
+    return colorName
+  }
+
   const lowerColor = colorName.toLowerCase()
 
   // Direct lookup
@@ -58,38 +73,112 @@ function getHexFromColorName(colorName: string): string | null {
 }
 
 /**
- * Find matching Vespa product based on selected color
- * Returns the product with the closest color match
+ * Check if a product is a Vespa scooter
  */
-export function findMatchingProduct(selectedColorHex: string): {
-  product: VespaProduct | null
-  similarity: number
-} {
-  let bestMatch: VespaProduct | null = null
-  let minDistance = Infinity
+function isVespaScooter(product: VespaProduct): boolean {
+  return (
+    product.category === 'scooter' &&
+    product.name.toLowerCase().includes('vespa')
+  )
+}
 
-  for (const product of vespaProducts) {
+/**
+ * Check if product matches a specific Vespa model
+ */
+function matchesVespaModel(product: VespaProduct, model: VespaModel | null): boolean {
+  if (!model) return true // No model filter, match all
+  
+  const productName = product.name.toLowerCase()
+  const modelLower = model.toLowerCase()
+  
+  // Special handling for Snake
+  if (model === 'Snake') {
+    return productName.includes('Snake') || productName.includes('snake')
+  }
+  
+  return productName.includes(modelLower)
+}
+
+/**
+ * Find ALL matching Vespa products based on selected color and model
+ * Returns array of products that match the color threshold
+ */
+export function findAllMatchingProducts(
+  selectedColorHex: string,
+  products: VespaProduct[] = [],
+  selectedModel: VespaModel | null = null
+): VespaProduct[] {
+  const matches: VespaProduct[] = []
+  const COLOR_THRESHOLD = 50 // Allow some color variation for matching
+
+  for (const product of products) {
+    // Filter: Only Vespa scooters
+    if (!isVespaScooter(product)) continue
+    
+    // Filter: Match selected model if specified
+    if (!matchesVespaModel(product, selectedModel)) continue
+    
+    // Get product color hex
     const productHex = getHexFromColorName(product.color)
     
     if (productHex) {
       const distance = colorDistance(selectedColorHex, productHex)
       
-      // Consider it a match if very close (threshold of 50 for RGB distance)
-      if (distance < minDistance) {
+      // Match if within color threshold
+      if (distance < COLOR_THRESHOLD) {
+        matches.push(product)
+      }
+    }
+  }
+
+  return matches
+}
+
+/**
+ * Find matching Vespa product based on selected color (legacy - returns single best match)
+ * Returns the product if available (100% match)
+ */
+export function findMatchingProduct(
+  selectedColorHex: string,
+  products: VespaProduct[] = []
+): {
+  product: VespaProduct | null
+  isAvailable: boolean
+} {
+  let bestMatch: VespaProduct | null = null
+  let minDistance = Infinity
+
+  for (const product of products) {
+    // Only match Vespa scooters
+    if (!isVespaScooter(product)) continue
+    
+    const productHex = getHexFromColorName(product.color)
+    
+    if (productHex) {
+      const distance = colorDistance(selectedColorHex, productHex)
+      
+      // Strict match: very small distance (essentially identical)
+      if (distance < 15 && distance < minDistance) {
         minDistance = distance
         bestMatch = product
       }
     }
   }
 
-  // Calculate similarity percentage (inverse of distance, normalized)
-  const similarity = minDistance < Infinity ? Math.max(0, 100 - (minDistance / 4.4)) : 0
+  // Only return match if strict threshold met
+  const isAvailable = minDistance < 15
 
-  // Only return match if similarity is above 70%
   return {
-    product: similarity > 70 ? bestMatch : null,
-    similarity: Math.round(similarity),
+    product: isAvailable ? bestMatch : null,
+    isAvailable,
   }
+}
+
+/**
+ * Get all Vespa scooters from products list
+ */
+export function getVespaScooters(products: VespaProduct[]): VespaProduct[] {
+  return products.filter(isVespaScooter)
 }
 
 /**
@@ -98,4 +187,3 @@ export function findMatchingProduct(selectedColorHex: string): {
 export function getCollectionUrlWithColor(colorName: string): string {
   return `/collection?colors=${encodeURIComponent(colorName)}`
 }
-

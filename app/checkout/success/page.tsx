@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { CheckCircle } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -10,13 +10,12 @@ import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 
 export default function OrderSuccessPage() {
-  const [orderId, setOrderId] = useState<string>('')
-
-  useEffect(() => {
-    // Generate a random order ID client-side
+  // Generate a random order ID using lazy initializer (runs only once on mount)
+  // This avoids the setState-in-effect warning and ensures the ID is stable
+  const [orderId] = useState(() => {
     const randomId = Math.floor(100000 + Math.random() * 900000)
-    setOrderId(`#CMD-${randomId}`)
-  }, [])
+    return `#CMD-${randomId}`
+  })
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white flex flex-col">
@@ -42,7 +41,7 @@ export default function OrderSuccessPage() {
             <div className="w-full bg-white/5 rounded-xl p-4 border border-white/10">
               <p className="text-sm text-white/60 mb-1 uppercase tracking-wider">Numéro de commande</p>
               <p className="text-xl font-mono font-bold text-amber-300">
-                {orderId || '...'}
+                {orderId}
               </p>
             </div>
 

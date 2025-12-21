@@ -1,11 +1,11 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { getFeaturedVespas } from '@/data/vespa'
+import { getFeaturedProducts } from '@/lib/products'
 import { Button } from '@/components/ui/button'
 
-export function VespaProducts() {
-  const featured = getFeaturedVespas(2)
+export async function VespaProducts() {
+  const featured = await getFeaturedProducts(2)
 
   return (
     <section

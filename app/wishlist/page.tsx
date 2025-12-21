@@ -20,7 +20,7 @@ export default function WishlistPage() {
       
       <main className="container mx-auto px-4 py-24">
         {/* Header Section */}
-        <div className="text-center mb-12 space-y-4">
+        <div className="text-center mb-12 space-y-0 py-5">
           <p className="text-xs uppercase tracking-[0.5em] text-amber-300">Mes Favoris</p>
           <h1 className="text-4xl md:text-5xl font-black bg-linear-to-r from-amber-400 via-rose-400 to-sky-400 bg-clip-text text-transparent px-2 py-1">
             Liste de Souhaits

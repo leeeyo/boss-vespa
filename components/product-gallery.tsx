@@ -12,9 +12,10 @@ type ProductGalleryProps = {
   ratio?: number
   className?: string
   thumbnailSize?: 'sm' | 'md'
+  productName?: string
 }
 
-export function ProductGallery({ images, ratio = 4 / 3, className, thumbnailSize = 'md' }: ProductGalleryProps) {
+export function ProductGallery({ images, ratio = 4 / 3, className, thumbnailSize = 'md', productName = 'Produit' }: ProductGalleryProps) {
   const [current, setCurrent] = useState(0)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
@@ -38,7 +39,7 @@ export function ProductGallery({ images, ratio = 4 / 3, className, thumbnailSize
           <div className="relative w-full" style={{ paddingBottom: `${(1 / ratio) * 100}%` }}>
             <Image
               src={images[current]}
-              alt=""
+              alt={`${productName} - Image ${current + 1}`}
               fill
               className="object-cover absolute inset-0"
               sizes="(min-width: 1024px) 60vw, 100vw"
@@ -60,7 +61,7 @@ export function ProductGallery({ images, ratio = 4 / 3, className, thumbnailSize
                 idx === current ? 'border-amber-400 shadow-lg ring-2 ring-amber-400/50' : 'border-white/10 hover:border-white/30'
               )}
             >
-              <Image src={img} alt="" width={160} height={160} className="h-full w-full object-cover" />
+              <Image src={img} alt={`${productName} - Miniature ${idx + 1}`} width={160} height={160} className="h-full w-full object-cover" />
             </button>
           ))}
         </div>
@@ -87,7 +88,7 @@ export function ProductGallery({ images, ratio = 4 / 3, className, thumbnailSize
             </button>
             <div className="flex-1 rounded-2xl overflow-hidden border border-white/20 bg-black">
               <AspectRatio ratio={ratio}>
-                <Image src={images[lightboxIndex]} alt="" fill className="object-contain" sizes="80vw" />
+                <Image src={images[lightboxIndex]} alt={`${productName} - Vue agrandie ${lightboxIndex + 1}`} fill className="object-contain" sizes="80vw" />
               </AspectRatio>
             </div>
             <button
@@ -110,7 +111,7 @@ export function ProductGallery({ images, ratio = 4 / 3, className, thumbnailSize
                   idx === lightboxIndex ? 'border-amber-400' : 'border-transparent'
                 )}
               >
-                <Image src={img} alt="" width={80} height={80} className="h-16 w-16 object-cover rounded-lg" />
+                <Image src={img} alt={`${productName} - Miniature galerie ${idx + 1}`} width={80} height={80} className="h-16 w-16 object-cover rounded-lg" />
               </button>
             ))}
           </div>

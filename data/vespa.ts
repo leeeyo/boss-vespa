@@ -2,6 +2,7 @@ export type VespaProduct = {
   slug: string
   name: string
   subtitle: string
+  category: 'scooter' | 'accessory'
   color: string
   description: string
   price: string
@@ -17,6 +18,7 @@ export const vespaProducts: VespaProduct[] = [
     slug: 'vespa-sprint-s-125-green-jungle',
     name: 'Vespa Sprint S 125',
     subtitle: 'Green Jungle Edition',
+    category: 'scooter',
     color: 'Vert Jungle & Blanc Crème',
     description:
       'Version sportive avec finitions satinées, jantes noires et détails lime pour une présence ultra moderne en ville.',
@@ -33,6 +35,7 @@ export const vespaProducts: VespaProduct[] = [
     slug: 'vespa-primavera-125-bianco',
     name: 'Vespa Primavera 125',
     subtitle: 'Bianco Classico',
+    category: 'scooter',
     color: 'Blanc perlé',
     description:
       'L’icône intemporelle Vespa avec touches chromées, idéale pour les balades méditerranéennes et les trajets quotidiens.',
@@ -44,6 +47,132 @@ export const vespaProducts: VespaProduct[] = [
       { label: 'Extras', value: 'Rack arrière, selle bicolore' },
     ],
     images: ['/images/white.jpg', '/images/white1.jpeg', '/images/white2.jpeg', '/images/white3.jpeg'],
+  },
+  {
+    slug: 'casque-vespa-vintage',
+    name: 'Casque Vespa Vintage',
+    subtitle: 'Protection & Style',
+    category: 'accessory',
+    color: 'Blanc & Cuir',
+    description: 'Casque jet avec visière solaire intégrée et finitions en cuir véritable.',
+    price: '450 TND',
+    specs: [
+      { label: 'Matériau', value: 'Polycarbonate' },
+      { label: 'Taille', value: 'M, L, XL' },
+    ],
+    images: ['/images/accessory.png'],
+  },
+  {
+    slug: 'top-case-vespa',
+    name: 'Top Case 32L',
+    subtitle: 'Rangement supplémentaire',
+    category: 'accessory',
+    color: 'Noir Mat',
+    description: 'Top case spacieux pouvant accueillir un casque intégral. Dossier passager inclus.',
+    price: '890 TND',
+    specs: [
+      { label: 'Capacité', value: '32 Litres' },
+      { label: 'Fixation', value: 'Support inclus' },
+    ],
+    images: ['/images/accessory1.png'],
+  },
+  {
+    slug: 'pare-brise-haut',
+    name: 'Pare-brise Haut',
+    subtitle: 'Protection optimale',
+    category: 'accessory',
+    color: 'Transparent',
+    description: 'Pare-brise haute protection en méthacrylate anti-rayures.',
+    price: '380 TND',
+    specs: [
+      { label: 'Hauteur', value: '70 cm' },
+      { label: 'Compatibilité', value: 'Primavera, Sprint' },
+    ],
+    images: ['/images/accessory2.png'],
+  },
+  {
+    slug: 'housse-protection',
+    name: 'Housse de Protection',
+    subtitle: 'Intérieur & Extérieur',
+    category: 'accessory',
+    color: 'Gris',
+    description: 'Housse imperméable avec logo Vespa, idéale pour protéger votre scooter.',
+    price: '150 TND',
+    specs: [
+      { label: 'Matière', value: 'Nylon résistant' },
+      { label: 'Taille', value: 'Universelle' },
+    ],
+    images: ['/images/accessory3.png'],
+  },
+   {
+    slug: 'porte-bagage-arriere',
+    name: 'Porte-bagage Arrière',
+    subtitle: 'Style & Praticité',
+    category: 'accessory',
+    color: 'Chrome',
+    description: 'Porte-bagage arrière rabattable chromé, le style classique Vespa.',
+    price: '420 TND',
+    specs: [
+      { label: 'Matériau', value: 'Acier chromé' },
+      { label: 'Charge max', value: '5 kg' },
+    ],
+    images: ['/images/accessory4.png'],
+  },
+   {
+    slug: 'antivol-guidon',
+    name: 'Antivol de Guidon',
+    subtitle: 'Sécurité maximale',
+    category: 'accessory',
+    color: 'Noir',
+    description: 'Antivol mécanique se fixant au guidon, simple et efficace.',
+    price: '290 TND',
+    specs: [
+      { label: 'Type', value: 'Mécanique' },
+      { label: 'Sécurité', value: 'Niveau 8/10' },
+    ],
+    images: ['/images/accessory5.png'],
+  },
+  {
+    slug: 'poignees-cuir',
+    name: 'Poignées en Cuir',
+    subtitle: 'Toucher premium',
+    category: 'accessory',
+    color: 'Marron Vintage',
+    description: 'Paire de poignées en cuir véritable pour un look rétro et une prise en main confortable.',
+    price: '120 TND',
+    specs: [
+      { label: 'Matériau', value: 'Cuir véritable' },
+      { label: 'Compatibilité', value: 'Universelle' },
+    ],
+    images: ['/images/accessory6.png'],
+  },
+  {
+    slug: 'retroviseurs-embout',
+    name: 'Rétroviseurs Embout de Guidon',
+    subtitle: 'Style Café Racer',
+    category: 'accessory',
+    color: 'Noir',
+    description: 'Rétroviseurs ronds à fixer en bout de guidon pour un style épuré et sportif.',
+    price: '180 TND',
+    specs: [
+      { label: 'Matériau', value: 'Aluminium CNC' },
+      { label: 'Diamètre', value: '80 mm' },
+    ],
+    images: ['/images/accessory7.jpg'],
+  },
+  {
+    slug: 'sacoche-laterale',
+    name: 'Sacoche Latérale Cuir',
+    subtitle: 'Rangement élégant',
+    category: 'accessory',
+    color: 'Marron',
+    description: 'Sacoche latérale en cuir étanche, idéale pour transporter vos essentiels avec style.',
+    price: '350 TND',
+    specs: [
+      { label: 'Matériau', value: 'Cuir synthétique' },
+      { label: 'Capacité', value: '15 Litres' },
+    ],
+    images: ['/images/accessory8.jpg'],
   },
 ]
 
@@ -57,11 +186,17 @@ export function getFeaturedVespas(limit = 2) {
 
 export type FilterOptions = {
   search?: string
+  category?: 'scooter' | 'accessory' | 'all'
   colors?: string[]
   engines?: string[]
   features?: string[]
   minPrice?: number
   maxPrice?: number
+}
+
+// Extract unique categories
+export function getAllCategories(): string[] {
+    return Array.from(new Set(vespaProducts.map(p => p.category))).sort()
 }
 
 // Extract unique colors from all products
@@ -110,6 +245,11 @@ export function getPriceRange(): { min: number; max: number } {
 // Main filtering function
 export function filterVespas(filters: FilterOptions): VespaProduct[] {
   return vespaProducts.filter((vespa) => {
+    // Category filter
+    if (filters.category && filters.category !== 'all') {
+        if (vespa.category !== filters.category) return false
+    }
+
     // Search filter (name or subtitle)
     if (filters.search) {
       const searchLower = filters.search.toLowerCase()

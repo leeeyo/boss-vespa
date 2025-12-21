@@ -3,7 +3,8 @@
 import React from 'react' 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect, useRef} from 'react'
-import { Search, X } from 'lucide-react'
+import { X } from 'lucide-react'
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -23,6 +24,7 @@ export function CollectionFilters({ colors, engines, features, priceRange }: Col
 
   // Initialize state from URL params
   const [search, setSearch] = useState(searchParams.get('search') || '')
+  const [category, setCategory] = useState(searchParams.get('category') || 'all')
   const [selectedColors, setSelectedColors] = useState<string[]>(
     searchParams.get('colors')?.split(',').filter(Boolean) || []
   )
@@ -51,6 +53,7 @@ export function CollectionFilters({ colors, engines, features, priceRange }: Col
       const params = new URLSearchParams()
 
       if (search) params.set('search', search)
+      if (category && category !== 'all') params.set('category', category)
       if (selectedColors.length > 0) params.set('colors', selectedColors.join(','))
       if (selectedEngines.length > 0) params.set('engines', selectedEngines.join(','))
       if (selectedFeatures.length > 0) params.set('features', selectedFeatures.join(','))
@@ -68,7 +71,7 @@ export function CollectionFilters({ colors, engines, features, priceRange }: Col
 
     return () => clearTimeout(timeoutId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, selectedColors, selectedEngines, selectedFeatures, minPrice, maxPrice])
+  }, [search, category, selectedColors, selectedEngines, selectedFeatures, minPrice, maxPrice])
 
   const handleColorToggle = (color: string) => {
     setSelectedColors((prev) =>
@@ -90,6 +93,7 @@ export function CollectionFilters({ colors, engines, features, priceRange }: Col
 
   const clearAllFilters = () => {
     setSearch('')
+    setCategory('all')
     setSelectedColors([])
     setSelectedEngines([])
     setSelectedFeatures([])
@@ -101,6 +105,7 @@ export function CollectionFilters({ colors, engines, features, priceRange }: Col
 
   const hasActiveFilters =
     search ||
+    category !== 'all' ||
     selectedColors.length > 0 ||
     selectedEngines.length > 0 ||
     selectedFeatures.length > 0 ||
@@ -108,7 +113,7 @@ export function CollectionFilters({ colors, engines, features, priceRange }: Col
     maxPrice !== priceRange.max
 
   return (
-    <aside className="space-y-6">
+    <aside className="space-y-6 pb-20 lg:pb-0">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-white">Filtres</h2>
@@ -124,23 +129,31 @@ export function CollectionFilters({ colors, engines, features, priceRange }: Col
           </Button>
         )}
       </div>
-
       {/* Search */}
       <div className="space-y-2">
         <Label htmlFor="search" className="text-white/80 text-sm font-semibold">
           Rechercher
         </Label>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-          <Input
-            id="search"
-            type="text"
-            placeholder="Nom ou modèle..."
-            value={search}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-            className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-amber-400/50"
-          />
-        </div>
+        {/* ... existing search input ... */}
+      </div>
+
+      {/* Category */}
+      <div className="space-y-3">
+        <Label className="text-white/80 text-sm font-semibold">Catégorie</Label>
+        <RadioGroup value={category} onValueChange={setCategory} className="flex flex-col space-y-2">
+           <div className="flex items-center space-x-2">
+            <RadioGroupItem value="all" id="cat-all" className="border-white/30 text-amber-500" />
+            <Label htmlFor="cat-all" className="text-sm text-white/80 cursor-pointer">Tout</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="scooter" id="cat-scooter" className="border-white/30 text-amber-500" />
+            <Label htmlFor="cat-scooter" className="text-sm text-white/80 cursor-pointer">Scooters</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="accessory" id="cat-accessory" className="border-white/30 text-amber-500" />
+            <Label htmlFor="cat-accessory" className="text-sm text-white/80 cursor-pointer">Accessoires</Label>
+          </div>
+        </RadioGroup>
       </div>
 
       {/* Price Range */}

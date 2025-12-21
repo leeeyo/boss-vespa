@@ -1,82 +1,78 @@
 'use client'
 
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
 import { ProductGallery } from '@/components/product-gallery'
-import { getVespaBySlug, vespaProducts } from '@/data/vespa'
+import { VespaProduct } from '@/data/vespa'
+import { IProduct } from '@/models/Product'
 import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 import { useCart } from '@/lib/cart-context'
 import { useToast } from '@/hooks/use-toast'
-
-type ProductPageProps = {
-  params: {
-    slug: string
-  }
-}
-
-// Since we're using 'use client', we can't export generateStaticParams directly in the same way 
-// if we want to keep it simple, but for Next.js App Router with 'use client', 
-// we typically separate the client component or use a wrapper.
-// However, 'use client' components can't be async page components receiving params directly in the same way in older versions,
-// but in Next.js 13/14, client components can be pages.
-// BUT `generateStaticParams` only works in Server Components.
-// So the plan says "Convert to client component with 'use client' directive". 
-// This implies the page itself becomes a client component. 
-// This breaks `generateStaticParams`.
-// To follow the plan strictly but keep it working, I should probably keep the page as Server Component 
-// and make a client component wrapper for the interactive parts, OR simpler:
-// The plan says "Convert to client component". I will follow the plan. 
-// If `generateStaticParams` is an issue, I will remove it or comment it out if it causes build errors, 
-// but usually it's ignored in client pages or handled differently.
-// Wait, `generateStaticParams` MUST be in a Server Component.
-// The user said "Follow the below plan verbatim".
-// "Convert to client component with 'use client' directive".
-// I will adhere to this. If it breaks SSG, so be it, as I must follow the plan.
-// However, a better approach that usually works in these instructions is that 
-// the user might not realize the conflict. 
-// I'll assume the user wants the INTERACTIVITY.
-// I'll make the page a Client Component. 
-// I'll comment out `generateStaticParams` to avoid build errors if necessary, 
-// OR I'll assume the user might have meant the inner content.
-// But "File: app/product/[slug]/page.tsx" implies editing THIS file.
-// I'll implement it as a client component.
-// I'll need to use `use` to unwrap params if it was server component, but here `params` is prop.
-// Actually, in Next.js 15 (which the user might be on, or 14), `params` is a promise.
-// In the existing code: `export default async function ProductPage({ params }: ProductPageProps) { const { slug } = await params`
-// If I make it 'use client', it can't be async.
-// So I will convert it to a standard component and use `useParams` if needed or just props.
-// But wait, the existing code handles params as a Promise.
-// I will try to keep it simple.
-
-// Checking the plan: "Convert to client component with 'use client' directive".
-// I will do that. I'll rely on `React.use()` or `useEffect` to unwrap params if needed, 
-// or simpler, just use the prop if passed (Next.js passes params to pages).
-// Note: In Next.js 13+, pages are Server Components by default.
-// If I add 'use client', it becomes a Client Component.
-// It receives `params`.
-// I'll implement the logic.
-
 import { Heart } from 'lucide-react'
 import { useWishlist } from '@/lib/wishlist-context'
 
-export default function ProductPage({ params }: any) {
-  const { slug } = require('next/navigation').useParams() 
-  const vespa = getVespaBySlug(slug as string)
+export default function ProductPage() {
+  const params = useParams()
+  const slug = params?.slug as string
+  const [vespa, setVespa] = useState<VespaProduct | null>(null)
+  const [loading, setLoading] = useState(true)
   const { addItem } = useCart()
   const { toggleWishlist, isInWishlist } = useWishlist()
   const { toast } = useToast()
 
-  // Hooks must be called unconditionally at top level
-  // So we handle the 'vespa not found' return LATER
+  useEffect(() => {
+    async function fetchProduct() {
+      try {
+        const response = await fetch(`/api/products/slug/${slug}`)
+        if (!response.ok) {
+          setVespa(null)
+          return
+        }
+        const data = (await response.json()) as IProduct
+        // Transform API response to VespaProduct format
+        const formattedPrice = new Intl.NumberFormat('fr-FR', {
+          style: 'decimal',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(data.price) + ' TND'
+        
+        setVespa({
+          slug: data.slug,
+          name: data.name,
+          subtitle: data.subtitle || '',
+          category: data.category,
+          color: data.color || '',
+          description: data.description || '',
+          price: formattedPrice,
+          specs: data.technicalInfo || [],
+          images: data.images || [],
+        })
+      } catch (error) {
+        console.error('Error fetching product:', error)
+        setVespa(null)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  const isWishlisted = vespa ? isInWishlist(vespa.slug) : false
+    if (slug) {
+      fetchProduct()
+    }
+  }, [slug])
 
-  const handleToggleWishlist = () => {
-    if (vespa) toggleWishlist(vespa)
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400 mx-auto mb-4"></div>
+          <p>Chargement...</p>
+        </div>
+      </div>
+    )
   }
 
   if (!vespa) {
@@ -90,6 +86,12 @@ export default function ProductPage({ params }: any) {
         </div>
       </div>
     )
+  }
+
+  const isWishlisted = isInWishlist(vespa.slug)
+
+  const handleToggleWishlist = () => {
+    toggleWishlist(vespa)
   }
 
   const handleAddToCart = () => {
@@ -108,7 +110,7 @@ export default function ProductPage({ params }: any) {
         <div className="text-center space-y-4">
           <p className="text-xs uppercase tracking-[0.5em] text-amber-300">{vespa.subtitle}</p>
           <h1 className="text-4xl md:text-6xl font-black">{vespa.name}</h1>
-          <p className="text-lg text-white/80">{vespa.description}</p>
+          <p className="text-lg text-white/80 mx-5">{vespa.description}</p>
         </div>
 
         {/* Main Layout: Gallery Left + Info Right */}
@@ -116,7 +118,7 @@ export default function ProductPage({ params }: any) {
           {/* Left: Gallery */}
           <div className="space-y-6">
             <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur p-8 shadow-[0_30px_60px_rgba(0,0,0,0.55)]">
-              <ProductGallery images={vespa.images} ratio={4 / 3} thumbnailSize="md" />
+              <ProductGallery images={vespa.images} ratio={4 / 3} thumbnailSize="md" productName={vespa.name} />
             </div>
 
             {/* Color Card */}
@@ -196,13 +198,6 @@ export default function ProductPage({ params }: any) {
                   </div>
                 </div>
               ))}
-            </div>
-
-            <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-6 mt-4">
-              <p className="text-sm text-white/80 leading-relaxed">
-                <span className="font-semibold text-amber-300">Note:</span> Toutes les spécifications sont fournies par le fabricant et peuvent varier selon les conditions d&apos;utilisation. 
-                Contactez notre showroom pour plus de détails techniques.
-              </p>
             </div>
           </div>
         </div>

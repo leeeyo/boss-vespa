@@ -1,0 +1,22 @@
+import { NextRequest, NextResponse } from 'next/server'
+import connectDB from '@/lib/mongodb'
+import Product from '@/models/Product'
+import { handleError } from '@/lib/api-helpers'
+
+export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+  try {
+    await connectDB()
+
+    const { slug } = await params
+    const product = await Product.findOne({ slug, isActive: true })
+
+    if (!product) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+    }
+
+    return NextResponse.json(product)
+  } catch (error) {
+    return handleError(error, 'Failed to fetch product')
+  }
+}
+

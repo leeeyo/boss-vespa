@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react'
+import { Phone, MapPin, Clock, Send } from 'lucide-react'
 
 import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
@@ -28,7 +28,18 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
-import { vespaProducts } from '@/data/vespa'
+import { VespaProduct } from '@/data/vespa'
+import { IProduct } from '@/models/Product'
+
+type ProductsApiResponse = {
+  products: IProduct[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    pages: number
+  }
+}
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -51,6 +62,44 @@ const formSchema = z.object({
 export default function ContactPage() {
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [products, setProducts] = useState<VespaProduct[]>([])
+
+  // Fetch products from API
+  React.useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const response = await fetch('/api/products?isActive=true')
+        if (response.ok) {
+          const data = (await response.json()) as ProductsApiResponse
+          // Transform API response to VespaProduct format
+          const transformed = data.products.map((product: IProduct) => {
+            const formattedPrice = new Intl.NumberFormat('fr-FR', {
+              style: 'decimal',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(product.price) + ' TND'
+            
+            return {
+              slug: product.slug,
+              name: product.name,
+              subtitle: product.subtitle || '',
+              category: product.category,
+              color: product.color || '',
+              description: product.description || '',
+              price: formattedPrice,
+              specs: product.technicalInfo || [],
+              images: product.images || [],
+            }
+          })
+          setProducts(transformed)
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error)
+      }
+    }
+
+    fetchProducts()
+  }, [])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -86,7 +135,7 @@ export default function ContactPage() {
       
       <main className="container mx-auto px-4 py-24">
         {/* Header Section */}
-        <div className="text-center mb-12 space-y-4">
+        <div className="text-center mb-12 space-y-4 py-5">
           <p className="text-xs uppercase tracking-[0.5em] text-amber-300">Contact</p>
           <h1 className="text-4xl md:text-6xl font-black bg-linear-to-r from-amber-400 via-rose-400 to-sky-400 bg-clip-text text-transparent px-2 py-1">
             Demander un Devis
@@ -176,7 +225,7 @@ export default function ContactPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="bg-slate-900 border-white/10 text-white">
-                            {vespaProducts.map((product) => (
+                            {products.map((product) => (
                               <SelectItem 
                                 key={product.slug} 
                                 value={product.name}

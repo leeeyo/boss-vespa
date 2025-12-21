@@ -1,19 +1,36 @@
-import { Suspense } from 'react'
+import { Suspense} from 'react'
+import { Metadata } from 'next'
 import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 import { CollectionFilters } from '@/components/collection-filters'
 import { CollectionGrid } from '@/components/collection-grid'
+import { Button } from '@/components/ui/button'
+import { Filter } from 'lucide-react'
 import {
-  getAllColors,
-  getAllEngines,
-  getAllFeatures,
-  getPriceRange,
-  filterVespas,
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { generateMetadata as genMeta } from '@/lib/seo'
+
+import {
+  getFilterMetadata,
+  filterProducts,
   type FilterOptions,
-} from '@/data/vespa'
+} from '@/lib/products'
+
+export const metadata: Metadata = genMeta({
+  title: 'Boutique',
+  description: 'Découvrez notre collection complète de Vespas et accessoires. Scooters et pièces détachées disponibles avec livraison en Tunisie.',
+  path: '/collection',
+  image: '/images/showcase1.jpg',
+})
 
 type SearchParams = {
   search?: string
+  category?: 'scooter' | 'accessory' | 'all'
   colors?: string
   engines?: string
   features?: string
@@ -32,6 +49,7 @@ export default async function CollectionPage({ searchParams }: CollectionPagePro
   // Extract filter options from URL params
   const filters: FilterOptions = {
     search: params.search,
+    category: params.category,
     colors: params.colors?.split(',').filter(Boolean),
     engines: params.engines?.split(',').filter(Boolean),
     features: params.features?.split(',').filter(Boolean),
@@ -39,14 +57,28 @@ export default async function CollectionPage({ searchParams }: CollectionPagePro
     maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
   }
 
-  // Get filtered products
-  const filteredProducts = filterVespas(filters)
+  // Get filtered products and filter metadata
+  let filteredProducts: Awaited<ReturnType<typeof filterProducts>> = []
+  let filterMetadata: Awaited<ReturnType<typeof getFilterMetadata>> = {
+    colors: [],
+    engines: [],
+    features: [],
+    priceRange: { min: 0, max: 0 },
+  }
 
-  // Get filter metadata
-  const colors = getAllColors()
-  const engines = getAllEngines()
-  const features = getAllFeatures()
-  const priceRange = getPriceRange()
+  try {
+    const results = await Promise.all([
+      filterProducts(filters),
+      getFilterMetadata(),
+    ])
+    filteredProducts = results[0]
+    filterMetadata = results[1]
+  } catch (error) {
+    console.error('Error fetching products:', error)
+    // Fallback to empty arrays on error
+  }
+
+  const { colors, engines, features, priceRange } = filterMetadata
 
   // Check if any filters are applied
   const isFiltered = Object.values(filters).some((value) => {
@@ -60,21 +92,46 @@ export default async function CollectionPage({ searchParams }: CollectionPagePro
 
       <main className="container mx-auto px-4 py-24">
         {/* Header */}
-        <div className="mb-12 text-center">
-          <p className="text-xs uppercase tracking-[0.5em] text-amber-300 mb-4">Collection</p>
-          <h1 className="text-4xl md:text-6xl font-black bg-linear-to-r from-amber-400 via-rose-400 to-sky-400 bg-clip-text text-transparent mb-4">
-            Toutes nos Vespas
+        <div className="mb-12 text-center py-5">
+          <p className="text-xs uppercase tracking-[0.5em] text-amber-300 mb-4">Boutique</p>
+          <h1 className="text-4xl md:text-6xl font-black bg-linear-to-r from-amber-400 via-rose-400 to-sky-400 bg-clip-text text-transparent mb-4 py-2">
+            Catalogue Boss Vespa
           </h1>
           <p className="text-white/80 max-w-2xl mx-auto">
-            Explorez notre collection complète de Vespas. Utilisez les filtres pour trouver le modèle parfait qui
-            correspond à vos besoins.
+            Découvrez nos scooters exclusifs et une large gamme d&apos;accessoires pour personnaliser votre expérience.
           </p>
         </div>
 
+         {/* Mobile Filters Button */}
+         <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-max">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button size="lg" className="rounded-full shadow-2xl bg-amber-400 text-black hover:bg-amber-300 font-bold px-8">
+                  <Filter className="mr-2 h-4 w-4" /> Filtres
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="h-[85vh] bg-slate-950 border-t border-white/10 text-white p-0 flex flex-col rounded-t-3xl">
+                <SheetHeader className="p-6 border-b border-white/10">
+                  <SheetTitle className="text-white">Filtres</SheetTitle>
+                </SheetHeader>
+                <div className="flex-1 overflow-y-auto px-6 py-6">
+                  <Suspense fallback={<FiltersSkeleton />}>
+                      <CollectionFilters
+                        colors={colors}
+                        engines={engines}
+                        features={features}
+                        priceRange={priceRange}
+                      />
+                    </Suspense>
+                </div>
+              </SheetContent>
+            </Sheet>
+         </div>
+
         {/* Content Grid */}
         <div className="grid lg:grid-cols-[280px_1fr] gap-8">
-          {/* Sidebar Filters */}
-          <div className="lg:sticky lg:top-24 h-fit">
+          {/* Sidebar Filters (Desktop) */}
+          <div className="hidden lg:block lg:sticky lg:top-24 h-fit">
             <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
               <Suspense fallback={<FiltersSkeleton />}>
                 <CollectionFilters

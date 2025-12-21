@@ -1,14 +1,15 @@
 'use client'
 
-import React from 'react'
-import { useState } from 'react'
+import React, { useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Sparkles, RotateCcw } from 'lucide-react'
+import { RotateCcw, Plus } from 'lucide-react'
+import { VESPA_MODELS, VespaModel } from '@/utils/color-matching'
 
 type ColorPickerPanelProps = {
   currentColor: string
   onColorChange: (color: string) => void
+  selectedModel?: VespaModel | null
+  onModelChange?: (model: VespaModel | null) => void
 }
 
 // Predefined colors - Sophisticated palette
@@ -36,24 +37,24 @@ const PRESET_COLORS = [
 
 const DEFAULT_COLOR = '#3d7c4a' // Vert Jungle
 
-export function ColorPickerPanel({ currentColor, onColorChange }: ColorPickerPanelProps) {
-  const [customInput, setCustomInput] = useState('')
+export function ColorPickerPanel({ 
+  currentColor, 
+  onColorChange,
+  selectedModel,
+  onModelChange
+}: ColorPickerPanelProps) {
+  const colorInputRef = useRef<HTMLInputElement>(null)
 
   const handlePresetClick = (hex: string) => {
     onColorChange(hex)
   }
 
-  const handleCustomInputChange = (value: string) => {
-    setCustomInput(value)
-    // Auto-apply if valid hex color
-    if (/^#[0-9A-F]{6}$/i.test(value)) {
-      onColorChange(value)
-    }
+  const handleCustomColorClick = () => {
+    colorInputRef.current?.click()
   }
 
   const handleReset = () => {
     onColorChange(DEFAULT_COLOR)
-    setCustomInput('')
   }
 
   const currentColorName = PRESET_COLORS.find(
@@ -61,101 +62,112 @@ export function ColorPickerPanel({ currentColor, onColorChange }: ColorPickerPan
   )?.name
 
   return (
-    <div className="h-full flex flex-col justify-center space-y-4 px-4 py-3">
-      {/* Header - Compact */}
-      <div className="text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-linear-to-br from-amber-400 to-orange-500 mb-2 shadow-lg">
-          <Sparkles className="w-6 h-6 text-black" />
-        </div>
-        <h2 className="text-xl font-bold text-white mb-1">Personnalisation</h2>
-        <p className="text-white/60 text-xs max-w-xs mx-auto">
-          Cliquez pour changer instantanément
+    <div className="h-full flex flex-col justify-start lg:justify-center space-y-4 lg:space-y-5 px-4 lg:px-6 py-4 lg:py-6">
+      {/* Header */}
+      <div className="text-center space-y-1">
+        <h2 className="text-lg lg:text-xl font-bold text-white">Personnalisation</h2>
+        <p className="text-white/60 text-xs">
+          Choisissez votre modèle et couleur
         </p>
       </div>
 
-      {/* Current Color Display - Compact */}
-      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-3">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-14 h-14 rounded-lg border-2 border-white/20 shadow-xl ring-2 ring-amber-400/30"
-            style={{ backgroundColor: currentColor }}
-          />
-          <div className="flex-1 min-w-0">
-            <p className="text-white font-bold text-sm truncate">
-              {currentColorName || 'Personnalisé'}
-            </p>
-            <p className="text-white/60 font-mono text-xs">{currentColor.toUpperCase()}</p>
+      {/* Model Selector */}
+      {onModelChange && (
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-white/50 uppercase tracking-wider">
+            Modèle Vespa
+          </label>
+          <div className="grid grid-cols-3 gap-1.5">
+            <button
+              onClick={() => onModelChange(null)}
+              className={`px-2 py-2 rounded-lg text-xs font-bold transition-all ${
+                !selectedModel
+                  ? 'bg-amber-400 text-slate-900'
+                  : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              Tous
+            </button>
+            {VESPA_MODELS.map((model) => (
+              <button
+                key={model}
+                onClick={() => onModelChange(model)}
+                className={`px-2 py-2 rounded-lg text-xs font-bold transition-all ${
+                  selectedModel === model
+                    ? 'bg-amber-400 text-slate-900'
+                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                {model}
+              </button>
+            ))}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Preset Colors - Compact 4x4 Grid */}
+      {/* Colors Grid */}
       <div className="space-y-2">
-        <Label className="text-white/80 text-xs font-semibold flex items-center gap-1.5">
-          <div className="w-0.5 h-3 bg-linear-to-b from-amber-400 to-orange-500 rounded-full" />
-          Couleurs
-        </Label>
-        <div className="grid grid-cols-4 gap-2">
+        <label className="text-xs font-bold text-white/50 uppercase tracking-wider">
+          Couleur
+        </label>
+        <div className="grid grid-cols-5 gap-2 lg:gap-3 justify-items-center">
+          {/* Custom Color Button (Plus Sign) */}
+          <div className="relative group">
+            <button
+              onClick={handleCustomColorClick}
+              className="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-linear-to-tr from-amber-400 via-rose-500 to-purple-600 p-[2px] shadow-lg transition-transform hover:scale-110 active:scale-95"
+              title="Couleur personnalisée"
+            >
+              <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center">
+                <Plus className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+              </div>
+            </button>
+             <input
+              ref={colorInputRef}
+              type="color"
+              value={currentColor}
+              onChange={(e) => onColorChange(e.target.value)}
+              className="absolute opacity-0 inset-0 w-full h-full cursor-pointer pointer-events-none"
+            />
+          </div>
+
+          {/* Preset Colors */}
           {PRESET_COLORS.map((color) => (
             <button
               key={color.hex}
               onClick={() => handlePresetClick(color.hex)}
-              className={`group relative aspect-square rounded-lg overflow-hidden transition-all ${
+              className={`w-9 h-9 lg:w-10 lg:h-10 rounded-full shadow-md transition-transform hover:scale-110 active:scale-95 border-2 ${
                 currentColor.toLowerCase() === color.hex.toLowerCase()
-                  ? 'ring-3 ring-amber-400 scale-105 shadow-xl'
-                  : 'ring-1 ring-white/20 hover:ring-amber-400/50 hover:scale-105 shadow-md'
+                  ? 'border-white ring-2 ring-white/20'
+                  : 'border-transparent hover:border-white/50'
               }`}
               style={{ backgroundColor: color.hex }}
               title={color.name}
-            >
-              {currentColor.toLowerCase() === color.hex.toLowerCase() && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-5 h-5 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                    <div className="w-2.5 h-2.5 rounded-full bg-black" />
-                  </div>
-                </div>
-              )}
-            </button>
+            />
           ))}
         </div>
       </div>
 
-      {/* Custom Color Input - Compact */}
-      <div className="space-y-2">
-        <Label className="text-white/80 text-xs font-semibold flex items-center gap-1.5">
-          <div className="w-0.5 h-3 bg-linear-to-b from-amber-400 to-orange-500 rounded-full" />
-          Personnalisée
-        </Label>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={customInput}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleCustomInputChange(e.target.value)}
-            placeholder="#000000"
-            className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 transition-all"
-            maxLength={7}
-          />
-          <input
-            type="color"
-            value={currentColor}
-            onChange={(e: React.ChangeEvent<HTMLInputElement> ) => onColorChange(e.target.value)}
-            className="w-10 h-10 rounded-lg cursor-pointer border border-white/20 bg-transparent"
-            title="Sélecteur"
-          />
+      {/* Current Selection Info */}
+       <div className="text-center space-y-1">
+          <p className="text-white font-medium text-sm">
+            {currentColorName || 'Couleur Personnalisée'}
+          </p>
+          <p className="text-white/40 font-mono text-xs uppercase">{currentColor}</p>
         </div>
-      </div>
 
-      {/* Reset Button - Compact */}
-      <Button
-        onClick={handleReset}
-        variant="outline"
-        size="sm"
-        className="w-full border border-white/30 text-black hover:bg-amber-400 hover:border-amber-400 transition-all rounded-lg text-xs font-semibold"
-      >
-        <RotateCcw className="w-3 h-3 mr-1.5 text-black" />
-        Réinitialiser
-      </Button>
+      {/* Actions */}
+      <div className="pt-2">
+        <Button
+          onClick={handleReset}
+          variant="ghost"
+          size="sm"
+          className="w-full text-white/50 hover:text-white hover:bg-white/5 text-xs"
+        >
+          <RotateCcw className="w-3 h-3 mr-1.5" />
+          Réinitialiser
+        </Button>
+      </div>
     </div>
   )
 }
-

@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { MapPin, Phone, Send, ShoppingBag } from 'lucide-react'
+import { MapPin, Send, ShoppingBag } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 import { Navigation } from '@/components/navigation'
@@ -106,7 +106,7 @@ export default function CheckoutPage() {
       
       <main className="container mx-auto px-4 py-24">
         {/* Header Section */}
-        <div className="text-center mb-12 space-y-4">
+        <div className="text-center mb-12 space-y-4 py-5">
           <p className="text-xs uppercase tracking-[0.5em] text-amber-300">Commande</p>
           <h1 className="text-4xl md:text-6xl font-black bg-linear-to-r from-amber-400 via-rose-400 to-sky-400 bg-clip-text text-transparent px-2 py-1">
             Finaliser la commande

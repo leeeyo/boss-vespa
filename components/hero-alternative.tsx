@@ -7,11 +7,63 @@ import Link from 'next/link'
 import { Phone, ArrowRight, Clock, Users, Sparkles } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { vespaProducts } from '@/data/vespa'
+import { VespaProduct } from '@/data/vespa'
+import { IProduct } from '@/models/Product'
+
+type ProductsApiResponse = {
+  products: IProduct[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    pages: number
+  }
+}
 
 export function HeroAlternative() {
   const [hoveredVespa, setHoveredVespa] = useState<string | null>(null)
   const [viewing, setViewing] = useState(3)
+  const [vespaProducts, setVespaProducts] = useState<VespaProduct[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch products from API
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const response = await fetch('/api/products?isActive=true&limit=10')
+        if (response.ok) {
+          const data = (await response.json()) as ProductsApiResponse
+          // Transform API response to VespaProduct format
+          const transformed = data.products.map((product: IProduct) => {
+            const formattedPrice = new Intl.NumberFormat('fr-FR', {
+              style: 'decimal',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(product.price) + ' TND'
+            
+            return {
+              slug: product.slug,
+              name: product.name,
+              subtitle: product.subtitle || '',
+              category: product.category,
+              color: product.color || '',
+              description: product.description || '',
+              price: formattedPrice,
+              specs: product.technicalInfo || [],
+              images: product.images || [],
+            }
+          })
+          setVespaProducts(transformed)
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [])
 
   // Simulate live viewer count
   useEffect(() => {
@@ -63,8 +115,14 @@ export function HeroAlternative() {
         </div>
 
         {/* Featured Vespas - Interactive Cards */}
-        <div className="max-w-7xl mx-auto space-y-8">
-          {vespaProducts.map((vespa, index) => (
+        {loading ? (
+          <div className="max-w-7xl mx-auto text-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400 mx-auto"></div>
+            <p className="mt-4 text-white/60">Chargement...</p>
+          </div>
+        ) : (
+          <div className="max-w-7xl mx-auto space-y-8">
+            {vespaProducts.map((vespa, index) => (
             <div
               key={vespa.slug}
               onMouseEnter={() => setHoveredVespa(vespa.slug)}
@@ -161,8 +219,9 @@ export function HeroAlternative() {
                 <div className="absolute inset-0 bg-linear-to-r from-amber-400/0 via-amber-400/5 to-amber-400/0 pointer-events-none" />
               )}
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Bottom CTA - Very subtle */}
         <div className="text-center mt-20 space-y-4">
