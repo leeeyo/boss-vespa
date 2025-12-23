@@ -72,7 +72,7 @@ export const metadata: Metadata = {
     ],
     apple: [
       {
-        url: '/apple-icon.png',
+        url: '/icon-192x192.png', // Fallback to existing icon if apple-icon.png doesn't exist
         sizes: '180x180',
         type: 'image/png',
       },

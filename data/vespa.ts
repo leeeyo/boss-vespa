@@ -96,7 +96,7 @@ export const vespaProducts: VespaProduct[] = [
     name: 'Housse de Protection',
     subtitle: 'Intérieur & Extérieur',
     category: 'accessory',
-    color: 'Gris',
+    color: '#898989', // Gris
     description: 'Housse imperméable avec logo Vespa, idéale pour protéger votre scooter.',
     price: '150 TND',
     specs: [

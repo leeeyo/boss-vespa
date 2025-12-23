@@ -150,13 +150,37 @@ export default function EditProductPage() {
           return res.json()
         })
         .then(product => {
+          // Convert color name to hex if needed
+          const getHexColor = (color: string): string => {
+            if (!color) return '#F59E0B'
+            if (color.startsWith('#')) return color
+            // Try to match color name to hex
+            const colorMap: Record<string, string> = {
+              'gris': '#898989',
+              'Gris': '#898989',
+              'noir': '#1a1a1a',
+              'Noir': '#1a1a1a',
+              'blanc': '#f5f5f0',
+              'Blanc': '#f5f5f0',
+              'rouge': '#c41e3a',
+              'Rouge': '#c41e3a',
+              'bleu': '#1e90ff',
+              'Bleu': '#1e90ff',
+              'vert': '#3d7c4a',
+              'Vert': '#3d7c4a',
+            }
+            return colorMap[color.toLowerCase()] || colorMap[color] || color
+          }
+          
+          const hexColor = getHexColor(product.color || '')
+          
           setFormData({
             name: product.name || '',
             slug: product.slug || '',
             subtitle: product.subtitle || '',
             category: product.category || 'scooter',
-            color: product.color || '',
-            customColor: product.color || '#F59E0B',
+            color: hexColor,
+            customColor: hexColor,
             type: product.type || '',
             enginePower: product.enginePower?.toString() || '',
             price: product.price?.toString() || '',
