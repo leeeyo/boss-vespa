@@ -352,7 +352,7 @@ export default function AdminProductsPage() {
                   key={product._id} 
                   className="bg-white/5 border-white/10 overflow-hidden hover:border-amber-400/30 transition-all group"
                 >
-                  <div className="relative h-48 w-full bg-slate-800">
+                  <Link href={`/admin/products/${product._id}/edit`} className="relative h-48 w-full bg-slate-800 block">
                     {product.images?.[0] ? (
                       <Image 
                         src={product.images[0]} 
@@ -380,11 +380,13 @@ export default function AdminProductsPage() {
                         Stock faible
                       </div>
                     )}
-                  </div>
+                  </Link>
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-bold text-white group-hover:text-amber-400 transition-colors line-clamp-1">{product.name}</h3>
+                        <Link href={`/admin/products/${product._id}/edit`} className="text-lg font-bold text-white group-hover:text-amber-400 transition-colors line-clamp-1 block hover:underline">
+                          {product.name}
+                        </Link>
                         <p className="text-sm text-white/40 truncate">{product.color || 'Couleur non spécifiée'}</p>
                       </div>
                       <div className="text-right ml-4">
@@ -396,14 +398,16 @@ export default function AdminProductsPage() {
                     </div>
                     
                     <div className="flex gap-2 pt-4 border-t border-white/5">
-                      <Button 
-                        variant="outline" 
-                        className="flex-1 border-white/10 bg-white/5 hover:bg-white/10 text-white text-xs py-1 h-9"
-                        aria-label={`Modifier ${product.name}`}
-                      >
-                        <Edit2 size={14} className="mr-2" aria-hidden="true" />
-                        Modifier
-                      </Button>
+                      <Link href={`/admin/products/${product._id}/edit`} className="flex-1">
+                        <Button 
+                          variant="outline" 
+                          className="w-full border-white/10 bg-white/5 hover:bg-white/10 text-white text-xs py-1 h-9"
+                          aria-label={`Modifier ${product.name}`}
+                        >
+                          <Edit2 size={14} className="mr-2" aria-hidden="true" />
+                          Modifier
+                        </Button>
+                      </Link>
                       <Button 
                         variant="outline" 
                         className="px-3 border-white/10 bg-white/5 hover:bg-white/10 text-white py-1 h-9"
@@ -446,7 +450,7 @@ export default function AdminProductsPage() {
                   >
                     {/* Product Info */}
                     <div className="col-span-4 flex items-center gap-4">
-                      <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-800 shrink-0">
+                      <Link href={`/admin/products/${product._id}/edit`} className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-800 shrink-0 hover:ring-2 hover:ring-amber-400/50 transition-all">
                         {product.images?.[0] ? (
                           <Image 
                             src={product.images[0]} 
@@ -459,9 +463,11 @@ export default function AdminProductsPage() {
                             <Package size={20} aria-hidden="true" />
                           </div>
                         )}
-                      </div>
+                      </Link>
                       <div className="min-w-0">
-                        <h3 className="font-bold text-white truncate">{product.name}</h3>
+                        <Link href={`/admin/products/${product._id}/edit`} className="font-bold text-white truncate block hover:text-amber-400 transition-colors">
+                          {product.name}
+                        </Link>
                         <p className="text-sm text-white/40 truncate">{product.color || 'Couleur non spécifiée'}</p>
                       </div>
                     </div>
@@ -493,14 +499,16 @@ export default function AdminProductsPage() {
 
                     {/* Actions */}
                     <div className="col-span-2 flex justify-end gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="border-white/10 bg-white/5 hover:bg-white/10 text-white"
-                        aria-label={`Modifier ${product.name}`}
-                      >
-                        <Edit2 size={14} aria-hidden="true" />
-                      </Button>
+                      <Link href={`/admin/products/${product._id}/edit`}>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="border-white/10 bg-white/5 hover:bg-white/10 text-white"
+                          aria-label={`Modifier ${product.name}`}
+                        >
+                          <Edit2 size={14} aria-hidden="true" />
+                        </Button>
+                      </Link>
                       <Button 
                         variant="outline" 
                         size="sm"

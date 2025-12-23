@@ -13,6 +13,7 @@ export interface IUser extends Document {
     country?: string
   }
   role: 'customer' | 'admin'
+  isActive: boolean
   wishlist: mongoose.Types.ObjectId[]
   orderHistory: mongoose.Types.ObjectId[]
   preferences?: {
@@ -54,6 +55,10 @@ const UserSchema = new Schema<IUser>(
       type: String,
       enum: ['customer', 'admin'],
       default: 'customer',
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
     },
     wishlist: [
       {

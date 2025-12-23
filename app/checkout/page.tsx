@@ -82,22 +82,81 @@ export default function CheckoutPage() {
       return
     }
 
+    // Ensure all items have productId for API call
+    const missingProductIds = items.filter((item) => !item.productId)
+    if (missingProductIds.length > 0) {
+      toast({
+        title: 'Erreur de commande',
+        description: 'Certains produits de votre panier ne sont plus disponibles. Veuillez les retirer et réessayer.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setIsSubmitting(true)
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    
-    console.log({ order: values, items })
-    
-    clearCart()
-    setIsSubmitting(false)
-    
-    toast({
-      title: 'Commande confirmée !',
-      description: 'Nous avons bien reçu votre commande. Nous vous contacterons bientôt.',
-    })
-    
-    router.push('/checkout/success')
+
+    try {
+      // Build the order payload
+      const orderPayload = {
+        items: items.map((item) => ({
+          productId: item.productId!,
+          quantity: item.quantity,
+        })),
+        deliveryAddress: {
+          street: values.address,
+          city: values.city,
+          postalCode: values.postalCode,
+          country: 'Tunisie',
+        },
+        deliveryRequested: true,
+        notes: values.notes || undefined,
+      }
+
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderPayload),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        // Handle specific error cases
+        if (response.status === 401) {
+          toast({
+            title: 'Connexion requise',
+            description: 'Veuillez vous connecter pour passer une commande.',
+            variant: 'destructive',
+          })
+          router.push('/auth/login?redirect=/checkout')
+          return
+        }
+
+        throw new Error(data.error || 'Erreur lors de la création de la commande')
+      }
+
+      // Success - clear cart and redirect
+      clearCart()
+      
+      toast({
+        title: 'Commande confirmée !',
+        description: 'Nous avons bien reçu votre commande. Nous vous contacterons bientôt.',
+      })
+      
+      // Pass the orderId to success page
+      router.push(`/checkout/success?orderId=${encodeURIComponent(data.orderId)}`)
+    } catch (error) {
+      console.error('Order submission error:', error)
+      toast({
+        title: 'Erreur de commande',
+        description: error instanceof Error ? error.message : 'Une erreur est survenue. Veuillez réessayer.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (

@@ -25,7 +25,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Users can only view their own personalizations unless they're admin
-    if (user.role !== 'admin' && personalization.userId.toString() !== user.id) {
+    if (user.role !== 'admin' && personalization.userId?.toString() !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

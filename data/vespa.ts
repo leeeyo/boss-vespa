@@ -11,6 +11,7 @@ export type VespaProduct = {
     value: string
   }[]
   images: string[]
+  productId?: string // Backend MongoDB _id for API calls
 }
 
 export const vespaProducts: VespaProduct[] = [

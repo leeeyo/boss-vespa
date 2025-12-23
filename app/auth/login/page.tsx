@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -13,7 +13,7 @@ import { Footer } from '@/components/footer'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
@@ -172,6 +172,18 @@ export default function LoginPage() {
       
       <Footer />
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-amber-400" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }
 

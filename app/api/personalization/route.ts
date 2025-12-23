@@ -3,7 +3,7 @@ import connectDB from '@/lib/mongodb'
 import Personalization from '@/models/Personalization'
 import { handleError, requireAdmin, getCurrentUser } from '@/lib/api-helpers'
 import { z } from 'zod'
-import { sendOrderConfirmationEmail, sendAdminNotificationEmail } from '@/lib/email'
+import { sendOrderConfirmationEmail, sendAdminOrderNotification } from '@/lib/email'
 
 // Schema for creating a personalization request (public - no auth required)
 const createPersonalizationSchema = z.object({
@@ -108,10 +108,8 @@ export async function POST(request: NextRequest) {
 
     // Send confirmation email to customer
     try {
-      await sendOrderConfirmationEmail({
+      const orderEmailData = {
         orderId: personalization._id.toString(),
-        customerEmail: validatedData.contactInfo.email,
-        customerName: validatedData.contactInfo.name,
         items: [
           {
             name: `Vespa ${validatedData.vespaModel} - Couleur: ${validatedData.color}`,
@@ -119,9 +117,23 @@ export async function POST(request: NextRequest) {
             price: validatedData.estimatedPrice || 0,
           },
         ],
+        subtotal: validatedData.estimatedPrice || 0,
+        shippingCost: 0,
         total: validatedData.estimatedPrice || 0,
-        deliveryAddress: validatedData.contactInfo.address || 'Retrait en magasin',
-      })
+        status: 'pending',
+        paymentMethod: 'À définir',
+        deliveryRequested: validatedData.deliveryPreference === 'delivery',
+        deliveryAddress: validatedData.contactInfo.address
+          ? { street: validatedData.contactInfo.address }
+          : undefined,
+        notes: validatedData.notes,
+      }
+
+      await sendOrderConfirmationEmail(
+        orderEmailData,
+        validatedData.contactInfo.email,
+        validatedData.contactInfo.name
+      )
     } catch (emailError) {
       console.error('Failed to send confirmation email:', emailError)
       // Don't fail the request if email fails
@@ -129,10 +141,8 @@ export async function POST(request: NextRequest) {
 
     // Send notification to admin
     try {
-      await sendAdminNotificationEmail({
+      const adminOrderData = {
         orderId: personalization._id.toString(),
-        customerEmail: validatedData.contactInfo.email,
-        customerName: validatedData.contactInfo.name,
         items: [
           {
             name: `Vespa ${validatedData.vespaModel} - Couleur: ${validatedData.color}`,
@@ -140,9 +150,23 @@ export async function POST(request: NextRequest) {
             price: validatedData.estimatedPrice || 0,
           },
         ],
+        subtotal: validatedData.estimatedPrice || 0,
+        shippingCost: 0,
         total: validatedData.estimatedPrice || 0,
-        deliveryAddress: validatedData.contactInfo.address || 'Retrait en magasin',
-      })
+        status: 'pending',
+        paymentMethod: 'À définir',
+        deliveryRequested: validatedData.deliveryPreference === 'delivery',
+        deliveryAddress: validatedData.contactInfo.address
+          ? { street: validatedData.contactInfo.address }
+          : undefined,
+        notes: validatedData.notes,
+      }
+
+      await sendAdminOrderNotification(
+        adminOrderData,
+        validatedData.contactInfo.email,
+        validatedData.contactInfo.name
+      )
     } catch (emailError) {
       console.error('Failed to send admin notification email:', emailError)
       // Don't fail the request if email fails

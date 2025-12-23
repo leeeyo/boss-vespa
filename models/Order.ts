@@ -24,7 +24,7 @@ export interface IOrder extends Document {
   deliveryRequested: boolean
   paid: boolean
   paymentMethod: string
-  status: 'pending' | 'confirmed' | 'preparing' | 'shipped' | 'delivered' | 'cancelled'
+  status: 'pending' | 'confirmed' | 'shipping' | 'delivered' | 'cancelled'
   notes?: string
   createdAt: Date
   updatedAt: Date
@@ -103,7 +103,7 @@ const OrderSchema = new Schema<IOrder>(
     },
     status: {
       type: String,
-      enum: ['pending', 'confirmed', 'preparing', 'shipped', 'delivered', 'cancelled'],
+      enum: ['pending', 'confirmed', 'shipping', 'delivered', 'cancelled'],
       default: 'pending',
     },
     notes: {

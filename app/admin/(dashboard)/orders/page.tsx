@@ -14,7 +14,7 @@ import {
   CheckCircle2, 
   Truck, 
   AlertCircle,
-  MoreVertical,
+  Eye,
   ArrowLeft,
   Loader2
 } from 'lucide-react'
@@ -185,9 +185,12 @@ export default function AdminOrdersPage() {
                          order.status === 'delivered' ? 'Livré' : 'Annulé'}
                       </div>
 
-                      <Button variant="ghost" className="text-white/40 hover:text-white hover:bg-white/5">
-                        <MoreVertical size={20} />
-                      </Button>
+                      <Link href={`/admin/orders/${order._id}`}>
+                        <Button variant="outline" className="border-white/10 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white">
+                          <Eye size={18} className="mr-2" />
+                          Détails
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </div>

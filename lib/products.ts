@@ -45,6 +45,7 @@ export function transformProductToVespaProduct(product: IProduct | Record<string
     price: formattedPrice,
     specs: cleanSpecs,
     images: productObj.images || [],
+    productId: productObj._id?.toString(),
   }
 }
 
@@ -166,13 +167,14 @@ export async function filterProducts(filters: FilterOptions): Promise<VespaProdu
 
   // Price filter
   if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-    query.price = {}
+    const priceQuery: Record<string, number> = {}
     if (filters.minPrice !== undefined) {
-      query.price = { ...query.price, $gte: filters.minPrice }
+      priceQuery.$gte = filters.minPrice
     }
     if (filters.maxPrice !== undefined) {
-      query.price = { ...query.price, $lte: filters.maxPrice }
+      priceQuery.$lte = filters.maxPrice
     }
+    query.price = priceQuery
   }
 
   // Search filter

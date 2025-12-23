@@ -1,4 +1,4 @@
-import { Facebook, Instagram, MapPin, Phone } from 'lucide-react'
+import { Instagram, MapPin, Phone} from 'lucide-react'
 
 export function Footer() {
   return (
@@ -53,14 +53,7 @@ export function Footer() {
             </div>
             <div className="flex gap-4 pt-2">
               <a
-                href="#"
-                className="w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook size={20} />
-              </a>
-              <a
-                href="#"
+                href="https://www.instagram.com/boss.vespa.tn/"
                 className="w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors"
                 aria-label="Instagram"
               >

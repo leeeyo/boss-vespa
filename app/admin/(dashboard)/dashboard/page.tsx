@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { ShoppingCart, Package, Users, DollarSign, FileText, MessageSquare, ArrowRight } from 'lucide-react'
+import { ShoppingCart, Package, Users, DollarSign, FileText, ArrowRight, Palette, FileQuestion, Settings } from 'lucide-react'
 
 interface DashboardStats {
   orders: {
@@ -123,13 +123,30 @@ export default function AdminDashboardPage() {
       stats: 'Gestion active',
     },
     {
-      title: 'Devis & Custom',
-      description: 'Demandes personnalisées',
-      icon: MessageSquare,
+      title: 'Personnalisations',
+      description: 'Demandes de personnalisation',
+      icon: Palette,
       color: 'text-rose-400',
       href: '/admin/personalizations',
-      stats: `${(stats?.personalizations?.total || 0) + (stats?.devis?.total || 0)} demandes`,
-      badge: (stats?.personalizations?.pending || 0) + (stats?.devis?.pending || 0) > 0 ? 'Action requise' : null
+      stats: `${stats?.personalizations?.total || 0} demandes`,
+      badge: stats?.personalizations?.pending ? `${stats.personalizations.pending} en attente` : null
+    },
+    {
+      title: 'Devis',
+      description: 'Demandes de devis clients',
+      icon: FileQuestion,
+      color: 'text-orange-400',
+      href: '/admin/devis',
+      stats: `${stats?.devis?.total || 0} demandes`,
+      badge: stats?.devis?.pending ? `${stats.devis.pending} en attente` : null
+    },
+    {
+      title: 'Paramètres',
+      description: 'Configuration de la boutique',
+      icon: Settings,
+      color: 'text-slate-400',
+      href: '/admin/settings',
+      stats: 'Site, Email, Paiement, Livraison',
     },
   ]
 

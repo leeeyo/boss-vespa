@@ -96,10 +96,12 @@ export default function AdminBlogPage() {
               className="bg-white/5 border-white/10 pl-10 focus:ring-amber-400/20"
             />
           </div>
-          <Button className="bg-amber-400 text-black hover:bg-amber-300 font-bold">
-            <Plus size={18} className="mr-2" />
-            Nouvel Article
-          </Button>
+          <Link href="/admin/blog/new">
+            <Button className="bg-amber-400 text-black hover:bg-amber-300 font-bold">
+              <Plus size={18} className="mr-2" />
+              Nouvel Article
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -154,13 +156,17 @@ export default function AdminBlogPage() {
                   </div>
                   
                   <div className="flex gap-2 shrink-0">
-                    <Button variant="outline" className="border-white/10 bg-white/5 hover:bg-white/10 text-white h-10 px-4">
-                      <Edit2 size={16} className="mr-2" />
-                      Editer
-                    </Button>
-                    <Button variant="outline" className="px-3 border-white/10 bg-white/5 hover:bg-rose-500/20 text-rose-400 h-10">
-                      <Trash2 size={16} />
-                    </Button>
+                    <Link href={`/admin/blog/${post.slug}/edit`}>
+                      <Button variant="outline" className="border-white/10 bg-white/5 hover:bg-white/10 text-white h-10 px-4">
+                        <Edit2 size={16} className="mr-2" />
+                        Editer
+                      </Button>
+                    </Link>
+                    <Link href={`/admin/blog/${post.slug}/edit`}>
+                      <Button variant="outline" className="px-3 border-white/10 bg-white/5 hover:bg-rose-500/20 text-rose-400 h-10">
+                        <Trash2 size={16} />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </Card>

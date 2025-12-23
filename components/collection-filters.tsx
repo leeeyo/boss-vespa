@@ -134,7 +134,15 @@ export function CollectionFilters({ colors, engines, features, priceRange }: Col
         <Label htmlFor="search" className="text-white/80 text-sm font-semibold">
           Rechercher
         </Label>
-        {/* ... existing search input ... */}
+        <Input
+          id="search"
+          type="text"
+          placeholder="Rechercher un produit..."
+          value={search}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+          className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-amber-400/50"
+          aria-label="Rechercher un produit"
+        />
       </div>
 
       {/* Category */}

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { User, Mail, Phone, MapPin, Package, Heart, Settings, Loader2, LogOut } from 'lucide-react'
+import { User, Mail, Phone, MapPin, Package, Loader2, LogOut, SlidersHorizontal, Shield } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 
@@ -19,6 +19,9 @@ export default function ProfilePage() {
   const router = useRouter()
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
+  
+  // Track previous session email to detect changes (React recommended pattern)
+  const [prevSessionEmail, setPrevSessionEmail] = useState<string | null>(null)
   const [userData, setUserData] = useState({
     name: '',
     email: '',
@@ -30,17 +33,15 @@ export default function ProfilePage() {
     }
   })
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/login')
-    }
-  }, [status, router])
-
-  useEffect(() => {
-    if (session?.user) {
+  // Adjust state during rendering when session changes (per React docs)
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const sessionEmail = session?.user?.email ?? null
+  if (sessionEmail !== prevSessionEmail) {
+    setPrevSessionEmail(sessionEmail)
+    if (sessionEmail) {
       setUserData({
-        name: session.user.name || '',
-        email: session.user.email || '',
+        name: session?.user?.name || '',
+        email: sessionEmail,
         phone: '', // These would normally be fetched from a /api/user/profile route
         address: {
           street: '',
@@ -49,7 +50,13 @@ export default function ProfilePage() {
         }
       })
     }
-  }, [session])
+  }
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/login')
+    }
+  }, [status, router])
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -121,13 +128,13 @@ export default function ProfilePage() {
                     <Package size={18} />
                     Mes commandes
                   </Link>
-                  <Link href="/wishlist" className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:bg-white/5 transition-all">
-                    <Heart size={18} />
-                    Ma liste de souhaits
+                  <Link href="/profile/preferences" className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:bg-white/5 transition-all">
+                    <SlidersHorizontal size={18} />
+                    Préférences
                   </Link>
-                  <Link href="/profile/settings" className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:bg-white/5 transition-all">
-                    <Settings size={18} />
-                    Paramètres
+                  <Link href="/profile/security" className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:bg-white/5 transition-all">
+                    <Shield size={18} />
+                    Sécurité
                   </Link>
                 </nav>
               </Card>

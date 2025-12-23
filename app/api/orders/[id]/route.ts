@@ -5,7 +5,7 @@ import { requireAuth, handleError, requireAdmin } from '@/lib/api-helpers'
 import { z } from 'zod'
 
 const updateOrderSchema = z.object({
-  status: z.enum(['pending', 'confirmed', 'preparing', 'shipped', 'delivered', 'cancelled']).optional(),
+  status: z.enum(['pending', 'confirmed', 'shipping', 'delivered', 'cancelled']).optional(),
   paid: z.boolean().optional(),
   notes: z.string().optional(),
   shippingCost: z.number().optional(),
@@ -19,7 +19,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     if (user instanceof NextResponse) return user
 
     const { id } = await params
-    const order = await Order.findById(id).populate('items.productId').populate('personalizationId')
+    const order = await Order.findById(id)
+      .populate('items.productId')
+      .populate('personalizationId')
+      .populate('userId', 'name email phone')
 
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
@@ -72,6 +75,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     }
 
     await order.save()
+
+    // Populate the order before returning to match GET response shape
+    await order.populate([
+      'items.productId',
+      'personalizationId',
+      { path: 'userId', select: 'name email phone' }
+    ])
 
     return NextResponse.json(order)
   } catch (error) {

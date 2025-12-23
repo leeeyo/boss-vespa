@@ -19,6 +19,7 @@ export default function ProductPage() {
   const params = useParams()
   const slug = params?.slug as string
   const [vespa, setVespa] = useState<VespaProduct | null>(null)
+  const [productId, setProductId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const { addItem } = useCart()
   const { toggleWishlist, isInWishlist } = useWishlist()
@@ -39,6 +40,9 @@ export default function ProductPage() {
           minimumFractionDigits: 0,
           maximumFractionDigits: 0,
         }).format(data.price) + ' TND'
+        
+        // Store the backend product ID for order creation
+        setProductId(data._id.toString())
         
         setVespa({
           slug: data.slug,
@@ -95,7 +99,7 @@ export default function ProductPage() {
   }
 
   const handleAddToCart = () => {
-    addItem(vespa)
+    addItem(vespa, productId || undefined)
     toast({
       title: 'Produit ajouté au panier',
       description: `${vespa.name} a été ajouté à votre panier.`,

@@ -1,63 +1,70 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { VespaProduct } from '@/data/vespa'
 
 export type CartItem = VespaProduct & {
   quantity: number
-  selectedColor?: string
+  selectedColor?: string                                        
+  productId?: string // Backend MongoDB _id for API calls
 }
 
 type CartContextType = {
   items: CartItem[]
-  addItem: (product: VespaProduct) => void
+  addItem: (product: VespaProduct, productId?: string) => void
   removeItem: (slug: string) => void
   updateQuantity: (slug: string, quantity: number) => void
   clearCart: () => void
   getItemCount: () => number
   getCartTotal: () => string
+  getCartTotalNumeric: () => number
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([])
-  const [isInitialized, setIsInitialized] = useState(false)
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    try {
-      const storedCart = localStorage.getItem('boss-vespa-cart')
-      if (storedCart) {
-        setItems(JSON.parse(storedCart))
-      }
-    } catch (error) {
-      console.error('Failed to load cart from localStorage:', error)
+// Helper to load cart from localStorage (runs only on client)
+function getInitialCart(): CartItem[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const storedCart = localStorage.getItem('boss-vespa-cart')
+    if (storedCart) {
+      return JSON.parse(storedCart)
     }
-    setIsInitialized(true)
-  }, [])
+  } catch (error) {
+    console.error('Failed to load cart from localStorage:', error)
+  }
+  return []
+}
 
-  // Save to localStorage whenever items change
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  // Use lazy initializer to load from localStorage synchronously on first render
+  const [items, setItems] = useState<CartItem[]>(getInitialCart)
+  const isFirstRender = useRef(true)
+
+  // Save to localStorage whenever items change (skip first render to avoid double-write)
   useEffect(() => {
-    if (!isInitialized) return
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
     try {
       localStorage.setItem('boss-vespa-cart', JSON.stringify(items))
     } catch (error) {
       console.error('Failed to save cart to localStorage:', error)
     }
-  }, [items, isInitialized])
+  }, [items])
 
-  const addItem = (product: VespaProduct) => {
+  const addItem = (product: VespaProduct, productId?: string) => {
     setItems((prevItems) => {
       const existingItem = prevItems.find((item) => item.slug === product.slug)
       if (existingItem) {
         return prevItems.map((item) =>
           item.slug === product.slug
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + 1, productId: productId || item.productId }
             : item
         )
       }
-      return [...prevItems, { ...product, quantity: 1 }]
+      return [...prevItems, { ...product, quantity: 1, productId }]
     })
   }
 
@@ -95,6 +102,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return new Intl.NumberFormat('fr-TN').format(total).replace(/\s/g, ' ') + ' TND'
   }
 
+  const getCartTotalNumeric = () => {
+    return items.reduce((sum, item) => {
+      const numericPrice = parseInt(item.price.replace(/\s/g, '').replace('TND', ''))
+      return sum + numericPrice * item.quantity
+    }, 0)
+  }
+
   return (
     <CartContext.Provider
       value={{
@@ -105,6 +119,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         clearCart,
         getItemCount,
         getCartTotal,
+        getCartTotalNumeric,
       }}
     >
       {children}

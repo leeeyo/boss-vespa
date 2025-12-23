@@ -23,7 +23,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    addItem(product)
+    addItem(product, product.productId)
     toast({
       title: 'Ajouté au panier',
       description: `${product.name} a été ajouté à votre panier.`,

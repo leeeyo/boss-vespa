@@ -6,8 +6,7 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start",
-    "migrate": "npx tsx scripts/migrate.ts"
+    "start": "next start"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -42,6 +41,7 @@
     "@radix-ui/react-tooltip": "1.1.6",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.0",
+    "@uiw/react-md-editor": "^4.0.4",
     "@vercel/analytics": "latest",
     "@vercel/blob": "^2.0.0",
     "autoprefixer": "^10.4.20",
