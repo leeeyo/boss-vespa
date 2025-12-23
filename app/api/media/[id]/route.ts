@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { del } from '@vercel/blob'
 import { requireAdmin, handleError } from '@/lib/api-helpers'
+import { deleteFile } from '@/lib/blob-storage'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -15,7 +15,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ error: 'URL is required' }, { status: 400 })
     }
 
-    await del(url)
+    await deleteFile(url)
 
     return NextResponse.json({ message: 'Media deleted successfully' })
   } catch (error) {
