@@ -1,6 +1,6 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
+import { useSession } from '@/hooks/use-session'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Navigation } from '@/components/navigation'
@@ -23,7 +23,6 @@ import {
   SlidersHorizontal,
   Shield
 } from 'lucide-react'
-import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 
 interface OrderItem {
@@ -164,14 +163,16 @@ export default function OrdersPage() {
               </h1>
               <p className="text-white/60">Suivez l&apos;état de vos commandes en temps réel.</p>
             </div>
-            <Button 
-              variant="outline" 
-              className="border-rose-500/30 text-rose-400 hover:bg-rose-500/10"
-              onClick={() => signOut({ callbackUrl: '/' })}
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Déconnexion
-            </Button>
+            <form action="/api/auth/signout" method="POST">
+              <Button 
+                type="submit"
+                variant="outline" 
+                className="border-rose-500/30 text-rose-400 hover:bg-rose-500/10"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Déconnexion
+              </Button>
+            </form>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

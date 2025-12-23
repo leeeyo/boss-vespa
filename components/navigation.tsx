@@ -7,7 +7,7 @@ import { useState } from 'react'
 import { Menu, X, ShoppingCart, Heart, User } from 'lucide-react'
 import { useCart } from '@/lib/cart-context'
 import { useWishlist } from '@/lib/wishlist-context'
-import { useSession, signOut } from 'next-auth/react'
+import { useSession } from '@/hooks/use-session'
 
 const navItems = [
   { id: 'home', fr: 'Accueil', en: 'Home', href: '/' },
@@ -104,7 +104,7 @@ export function Navigation() {
               )}
             </Link>
 
-            {status === 'authenticated' ? (
+            {status === 'authenticated' && session ? (
               <div className="relative ml-4 group">
                 <button 
                   className="rounded-full border border-amber-400/50 p-2 text-amber-400 bg-amber-400/10 hover:bg-amber-400/20 transition-all flex items-center justify-center"
@@ -125,12 +125,14 @@ export function Navigation() {
                   <Link href="/profile" className="block px-4 py-2 text-sm text-white/70 hover:text-amber-400 hover:bg-white/5 transition-colors">
                     Mon Profil
                   </Link>
-                  <button 
-                    onClick={() => signOut()}
-                    className="w-full text-left px-4 py-2 text-sm text-rose-400 hover:bg-rose-500/10 transition-colors"
-                  >
-                    Déconnexion
-                  </button>
+                  <form action="/api/auth/signout" method="POST">
+                    <button 
+                      type="submit"
+                      className="w-full text-left px-4 py-2 text-sm text-rose-400 hover:bg-rose-500/10 transition-colors"
+                    >
+                      Déconnexion
+                    </button>
+                  </form>
                 </div>
               </div>
             ) : (
