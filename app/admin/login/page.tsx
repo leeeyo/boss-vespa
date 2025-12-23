@@ -1,45 +1,25 @@
 'use client'
 
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { loginAction } from './actions'
 
 export default function AdminLoginPage() {
-  const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (formData: FormData) => {
     setError('')
-    setLoading(true)
-
-    try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      })
-
+    startTransition(async () => {
+      const result = await loginAction(formData)
       if (result?.error) {
-        setError('Email ou mot de passe incorrect')
-      } else if (result?.ok) {
-        // Use window.location for a full page reload to ensure session is available
-        // This is necessary on Vercel where the session might not be immediately available
-        window.location.href = '/admin/dashboard'
+        setError(result.error)
       }
-    } catch (err) {
-      console.error(err)
-      setError('Une erreur est survenue')
-    } finally {
-      setLoading(false)
-    }
+      // If no error, redirect happens in the server action
+    })
   }
 
   return (
@@ -50,16 +30,15 @@ export default function AdminLoginPage() {
           <CardDescription className="text-white/60">Boss Vespa - Administration</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form action={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-white/90">
                 Email
               </Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="bg-white/10 border-white/20 text-white"
                 placeholder="admin@boss-vespa.tn"
@@ -71,16 +50,15 @@ export default function AdminLoginPage() {
               </Label>
               <Input
                 id="password"
+                name="password"
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 required
                 className="bg-white/10 border-white/20 text-white"
               />
             </div>
             {error && <p className="text-red-400 text-sm">{error}</p>}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Connexion...' : 'Se connecter'}
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? 'Connexion...' : 'Se connecter'}
             </Button>
           </form>
         </CardContent>
