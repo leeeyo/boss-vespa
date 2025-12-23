@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
+// Must match the cookie config in auth.ts
+const useSecureCookies = process.env.NODE_ENV === 'production'
+const cookieName = `${useSecureCookies ? '__Secure-' : ''}next-auth.session-token`
+
 // Rate limiting store (in-memory, consider Redis for production)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
 
@@ -54,11 +58,15 @@ export async function proxy(request: NextRequest) {
   }
 
   // Protect admin routes
-  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+  if (pathname.startsWith('/admin')) {
+    const token = await getToken({ 
+      req: request, 
+      secret: process.env.NEXTAUTH_SECRET,
+      cookieName: cookieName,
+    })
 
     if (!token) {
-      return NextResponse.redirect(new URL('/admin/login', request.url))
+      return NextResponse.redirect(new URL('/auth/login?callbackUrl=/admin/dashboard', request.url))
     }
 
     if (token.role !== 'admin') {
@@ -79,7 +87,11 @@ export async function proxy(request: NextRequest) {
   const isProtectedRoute = protectedApiRoutes.some((route) => pathname.startsWith(route))
 
   if (isProtectedRoute && !pathname.includes('/api/auth/')) {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+    const token = await getToken({ 
+      req: request, 
+      secret: process.env.NEXTAUTH_SECRET,
+      cookieName: cookieName,
+    })
 
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: corsHeaders })

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession } from '@/hooks/use-session'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -48,7 +48,7 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/admin/login')
+      router.push('/auth/login?callbackUrl=/admin/dashboard')
     }
   }, [status, router])
 

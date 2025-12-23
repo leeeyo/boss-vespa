@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, Suspense } from 'react'
-import { signIn } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, Suspense, useActionState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,56 +9,16 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
-import { useToast } from '@/hooks/use-toast'
 import { Loader2, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react'
+import { loginAction } from './actions'
 
 function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
-  const { toast } = useToast()
   const callbackUrl = searchParams.get('callbackUrl') || '/'
-  
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      })
-
-      if (result?.error) {
-        toast({
-          title: 'Erreur de connexion',
-          description: 'Email ou mot de passe incorrect.',
-          variant: 'destructive',
-        })
-      } else {
-        toast({
-          title: 'Connexion réussie',
-          description: 'Ravi de vous revoir !',
-        })
-        router.push(callbackUrl)
-        router.refresh()
-      }
-    } catch (err) {
-      console.error(err)
-      toast({
-        title: 'Une erreur est survenue',
-        description: 'Veuillez réessayer plus tard.',
-        variant: 'destructive',
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
+  
+  // Use useActionState for error handling - redirect is handled by Next.js natively
+  const [state, formAction, isPending] = useActionState(loginAction, null)
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white flex flex-col">
@@ -80,7 +39,14 @@ function LoginForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form action={formAction} className="space-y-5">
+              {/* Hidden input for callbackUrl - no client wrapper needed */}
+              <input type="hidden" name="callbackUrl" value={callbackUrl} />
+              {state?.error && (
+                <div className="bg-rose-500/10 border border-rose-500/30 text-rose-400 px-4 py-3 rounded-lg text-sm">
+                  {state.error}
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-white/90 font-medium">
                   Email
@@ -89,10 +55,9 @@ function LoginForm() {
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
                   <Input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="votre@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                     required
                     className="bg-white/10 border-white/10 text-white pl-10 h-12 focus:ring-amber-400/20 focus:border-amber-400/50 transition-all"
                   />
@@ -115,9 +80,8 @@ function LoginForm() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
                   <Input
                     id="password"
+                    name="password"
                     type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
                     required
                     className="bg-white/10 border-white/10 text-white pl-10 pr-10 h-12 focus:ring-amber-400/20 focus:border-amber-400/50 transition-all"
                   />
@@ -134,9 +98,9 @@ function LoginForm() {
               <Button 
                 type="submit" 
                 className="w-full h-12 bg-linear-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-bold text-base shadow-lg shadow-amber-500/20 transition-all active:scale-[0.98]" 
-                disabled={loading}
+                disabled={isPending}
               >
-                {loading ? (
+                {isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Connexion en cours...

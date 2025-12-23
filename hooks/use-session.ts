@@ -1,15 +1,21 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import type { Session } from 'next-auth'
 
-export function useSession() {
+interface UseSessionReturn {
+  data: Session | null
+  status: 'loading' | 'authenticated' | 'unauthenticated'
+}
+
+export function useSession(): UseSessionReturn {
   const [session, setSession] = useState<Session | null>(null)
   const [status, setStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading')
 
   useEffect(() => {
     // Only fetch session in browser
     if (typeof window === 'undefined') {
+      setStatus('unauthenticated')
       return
     }
 
@@ -30,7 +36,10 @@ export function useSession() {
       })
   }, [])
 
-  // Always return a valid structure
-  return { data: session, status: status || 'loading' }
+  // Use useMemo to ensure we always return a stable reference
+  return useMemo(() => ({ 
+    data: session, 
+    status: status 
+  }), [session, status])
 }
 

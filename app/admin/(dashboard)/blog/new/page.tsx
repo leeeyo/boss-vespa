@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession } from '@/hooks/use-session'
 import { useRouter } from 'next/navigation'
 import { BlogForm } from '../components/BlogForm'
 import { ArrowLeft, Loader2 } from 'lucide-react'
@@ -15,7 +15,7 @@ export default function NewBlogPage() {
   // Redirect if not admin
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/admin/login')
+      router.push('/auth/login?callbackUrl=/admin/dashboard')
     }
   }, [status, router])
 

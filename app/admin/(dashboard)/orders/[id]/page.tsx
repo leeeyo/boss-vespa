@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession } from '@/hooks/use-session'
 import { useRouter, useParams } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -131,7 +131,7 @@ export default function AdminOrderDetailPage() {
 
   useEffect(() => {
     if (authStatus === 'unauthenticated') {
-      router.push('/admin/login')
+      router.push('/auth/login?callbackUrl=/admin/dashboard')
     }
   }, [authStatus, router])
 

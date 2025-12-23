@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession } from '@/hooks/use-session'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -135,7 +135,7 @@ export default function AdminDevisPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/admin/login')
+      router.push('/auth/login?callbackUrl=/admin/dashboard')
     }
   }, [status, router])
 

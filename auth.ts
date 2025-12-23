@@ -10,16 +10,20 @@ interface AuthorizedUser extends NextAuthUser {
   role: 'customer' | 'admin'
 }
 
+// Cookie name must be consistent - use standard next-auth cookie names
+const useSecureCookies = process.env.NODE_ENV === 'production'
+const cookiePrefix = useSecureCookies ? '__Secure-' : ''
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   cookies: {
     sessionToken: {
-      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
+      name: `${cookiePrefix}next-auth.session-token`,
       options: {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        secure: useSecureCookies,
       },
     },
   },
@@ -69,7 +73,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: 'jwt',
   },
   pages: {
-    signIn: '/admin/login',
+    signIn: '/auth/login',
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -86,6 +90,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.role = token.role as 'customer' | 'admin'
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      // Default redirect behavior
+      if (url.startsWith('/')) return `${baseUrl}${url}`
+      if (url.startsWith(baseUrl)) return url
+      return baseUrl
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
