@@ -16,16 +16,18 @@ export interface UploadResult {
 }
 
 export interface BlobStorageConfig {
-  access?: 'public' | 'private'
+  access?: 'public' // Vercel Blob only supports 'public' access
   addRandomSuffix?: boolean
   contentType?: string
 }
 
 /**
- * Check if Vercel Blob is available (production mode)
+ * Check if Vercel Blob is available
+ * Uses Vercel Blob if token is available, regardless of environment
+ * This allows testing Vercel Blob in development if needed
  */
 export function isBlobStorageAvailable(): boolean {
-  return !!process.env.BLOB_READ_WRITE_TOKEN && process.env.NODE_ENV === 'production'
+  return !!process.env.BLOB_READ_WRITE_TOKEN
 }
 
 /**
@@ -45,8 +47,9 @@ export async function uploadFile(
   // Use Vercel Blob in production if token is available
   if (isBlobStorageAvailable()) {
     try {
+      // Vercel Blob only supports 'public' access
       const blob = await put(filename, file, {
-        access,
+        access: 'public',
         addRandomSuffix,
         contentType: contentType || (file instanceof File ? file.type : undefined),
         token: process.env.BLOB_READ_WRITE_TOKEN,
@@ -55,8 +58,8 @@ export async function uploadFile(
       return {
         url: blob.url,
         pathname: blob.pathname,
-        size: blob.size,
-        uploadedAt: blob.uploadedAt,
+        size: file instanceof File ? file.size : undefined,
+        uploadedAt: new Date(),
       }
     } catch (error) {
       console.error('Vercel Blob upload failed, falling back to local storage:', error)
@@ -65,8 +68,11 @@ export async function uploadFile(
   }
 
   // Fallback to local file storage for development
-  const bytes = file instanceof File ? await file.arrayBuffer() : file
-  const buffer = Buffer.from(bytes)
+  const buffer = file instanceof File 
+    ? Buffer.from(await file.arrayBuffer())
+    : Buffer.isBuffer(file) 
+    ? file 
+    : Buffer.from(file)
 
   // Generate unique filename
   const timestamp = Date.now()
