@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useActionState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,19 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { loginAction } from './actions'
 
 export default function AdminLoginPage() {
-  const [error, setError] = useState('')
-  const [isPending, startTransition] = useTransition()
-
-  const handleSubmit = async (formData: FormData) => {
-    setError('')
-    startTransition(async () => {
-      const result = await loginAction(formData)
-      if (result?.error) {
-        setError(result.error)
-      }
-      // If no error, redirect happens in the server action
-    })
-  }
+  const [state, formAction, isPending] = useActionState(loginAction, null)
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 p-4">
@@ -30,7 +18,7 @@ export default function AdminLoginPage() {
           <CardDescription className="text-white/60">Boss Vespa - Administration</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={handleSubmit} className="space-y-4">
+          <form action={formAction} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-white/90">
                 Email
@@ -56,7 +44,7 @@ export default function AdminLoginPage() {
                 className="bg-white/10 border-white/20 text-white"
               />
             </div>
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+            {state?.error && <p className="text-red-400 text-sm">{state.error}</p>}
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? 'Connexion...' : 'Se connecter'}
             </Button>
