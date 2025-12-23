@@ -29,8 +29,10 @@ export default function AdminLoginPage() {
 
       if (result?.error) {
         setError('Email ou mot de passe incorrect')
-      } else {
-        router.push('/admin/dashboard')
+      } else if (result?.ok) {
+        // Use window.location for a full page reload to ensure session is available
+        // This is necessary on Vercel where the session might not be immediately available
+        window.location.href = '/admin/dashboard'
       }
     } catch (err) {
       console.error(err)

@@ -11,6 +11,7 @@ interface AuthorizedUser extends NextAuthUser {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     CredentialsProvider({
       name: 'Credentials',
