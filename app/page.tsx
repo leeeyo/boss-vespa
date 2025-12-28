@@ -22,9 +22,9 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <Navigation />
       <main>
+        <Hero /> 
         <VespaProducts />
         <VespaShowcase />
-        <Hero />
         <Services />
         <Location />
       </main>

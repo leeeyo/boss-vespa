@@ -11,7 +11,7 @@ export async function VespaProducts() {
   return (
     <section
       id="featured"
-      className="mt-10 py-20 px-4 bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white border-y border-white/5"
+      className="py-20 px-4 bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white border-y border-white/5"
     >
       <div className="container mx-auto">
         <div className="mb-12 flex flex-col items-center gap-4 text-center overflow-visible">

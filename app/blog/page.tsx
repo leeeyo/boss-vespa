@@ -16,7 +16,7 @@ export const metadata: Metadata = genMeta({
 })
 
 export default async function BlogPage() {
-  let posts = await getAllBlogPosts().catch((error) => {
+  const posts = await getAllBlogPosts().catch((error) => {
     console.error('Error fetching blog posts:', error)
     return []
   })

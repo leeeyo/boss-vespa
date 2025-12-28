@@ -27,13 +27,13 @@ export function ShowcaseTabs({ products }: ShowcaseTabsProps) {
       <div className="flex justify-center mb-8">
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
           <TabsList className="bg-white/5 border border-white/10">
-            <TabsTrigger value="all" className="data-[state=active]:bg-amber-400 data-[state=active]:text-black">
+            <TabsTrigger value="all" className="data-[state=active]:bg-amber-400 text-white data-[state=active]:text-white">
               Tout
             </TabsTrigger>
-            <TabsTrigger value="scooter" className="data-[state=active]:bg-amber-400 data-[state=active]:text-black">
+            <TabsTrigger value="scooter" className="data-[state=active]:bg-amber-400 text-white data-[state=active]:text-white">
               Scooters
             </TabsTrigger>
-            <TabsTrigger value="accessory" className="data-[state=active]:bg-amber-400 data-[state=active]:text-black">
+            <TabsTrigger value="accessory" className="data-[state=active]:bg-amber-400 text-white data-[state=active]:text-white">
               Accessoires
             </TabsTrigger>
           </TabsList>
