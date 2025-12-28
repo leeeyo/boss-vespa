@@ -100,7 +100,7 @@ export default async function CollectionPage({ searchParams }: CollectionPagePro
         <Breadcrumb 
           items={[
             { name: 'Boutique', url: '/collection' },
-            ...(params.type ? [{ name: params.type, url: `/collection?type=${encodeURIComponent(params.type)}` }] : []),
+            ...(params.type ? [{ name: params.type }] : []),
           ]}
         />
 
@@ -123,6 +123,7 @@ export default async function CollectionPage({ searchParams }: CollectionPagePro
               <Link 
                 href="/collection"
                 className="ml-2 hover:text-amber-300 transition-colors"
+                aria-label={`Supprimer le filtre ${params.type}`}
               >
                 <X className="w-4 h-4 inline" />
               </Link>

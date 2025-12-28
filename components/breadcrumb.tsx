@@ -7,7 +7,7 @@ import { StructuredData } from '@/components/structured-data'
 
 type BreadcrumbItem = {
   name: string
-  url: string
+  url?: string
 }
 
 type BreadcrumbProps = {
@@ -20,7 +20,9 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
     ...items,
   ]
 
-  const structuredData = generateStructuredData('BreadcrumbList', { items: allItems })
+  // Only include items with URLs in structured data
+  const itemsWithUrls = allItems.filter(item => item.url)
+  const structuredData = generateStructuredData('BreadcrumbList', { items: itemsWithUrls })
 
   return (
     <>
@@ -30,8 +32,8 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
           const isLast = index === allItems.length - 1
           
           return (
-            <span key={item.url} className="flex items-center gap-2">
-              {index === 0 ? (
+            <span key={item.url || item.name} className="flex items-center gap-2">
+              {index === 0 && item.url ? (
                 <Link 
                   href={item.url} 
                   className="hover:text-white transition-colors flex items-center gap-1"
@@ -39,13 +41,17 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
                 >
                   <Home className="w-4 h-4" />
                 </Link>
-              ) : (
+              ) : item.url ? (
                 <Link 
                   href={item.url} 
                   className={`hover:text-white transition-colors ${isLast ? 'text-white font-semibold' : ''}`}
                 >
                   {item.name}
                 </Link>
+              ) : (
+                <span className={`${isLast ? 'text-white font-semibold' : ''}`}>
+                  {item.name}
+                </span>
               )}
               {!isLast && <ChevronRight className="w-4 h-4" />}
             </span>

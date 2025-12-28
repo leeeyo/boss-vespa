@@ -44,7 +44,7 @@ export default async function BlogPage() {
                 key={post.slug}
                 className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition-all"
               >
-                <Link href={`/blog/${post.slug}`} className="block">
+                <Link href={`/blog/${post.slug}`} className="block" aria-label={`Lire l'article: ${post.title}`}>
                   <div className="grid md:grid-cols-2 gap-6">
                     {/* Image */}
                     <div className="relative aspect-video md:aspect-square overflow-hidden">
@@ -93,10 +93,10 @@ export default async function BlogPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center text-amber-400 font-semibold group-hover:gap-2 transition-all">
+                      <span className="flex items-center text-amber-400 font-semibold group-hover:gap-2 transition-all" aria-hidden="true">
                         Lire l&apos;article
                         <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                      </div>
+                      </span>
                     </div>
                   </div>
                 </Link>

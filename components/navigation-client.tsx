@@ -74,6 +74,7 @@ export function NavigationClient({ scooterModels, recentBlogPosts }: NavigationC
                         <Link
                           key={model.modelType}
                           href={`/collection?type=${encodeURIComponent(model.modelType)}`}
+                          rel="nofollow"
                           className="p-3 rounded-lg hover:bg-white/5 hover:text-amber-400 transition-colors duration-200 group/item"
                         >
                           <div className="font-semibold text-sm text-white group-hover/item:text-amber-400">{model.modelType}</div>
@@ -253,6 +254,7 @@ export function NavigationClient({ scooterModels, recentBlogPosts }: NavigationC
                       <Link
                         key={model.modelType}
                         href={`/collection?type=${encodeURIComponent(model.modelType)}`}
+                        rel="nofollow"
                         className="block py-2 text-sm text-white/70 hover:text-amber-300 transition-colors"
                         onClick={() => setIsOpen(false)}
                       >

@@ -40,7 +40,7 @@ export function ProductCard({ product }: ProductCardProps) {
     <article className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur shadow-[0_20px_50px_rgba(0,0,0,0.4)] transition-all duration-300 hover:shadow-[0_30px_70px_rgba(0,0,0,0.6)] hover:scale-[1.02] hover:border-amber-400/30">
       {/* Image Container */}
       <div className="relative h-64 overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800">
-        <Link href={`/product/${product.slug}`} className="absolute inset-0 z-0">
+        <Link href={`/product/${product.slug}`} className="absolute inset-0 z-0" aria-label={`Voir ${product.name}`}>
           <Image
             src={product.images[0] as string}
             alt={product.name}
@@ -115,7 +115,7 @@ export function ProductCard({ product }: ProductCardProps) {
             asChild
             className="w-full bg-white/5 border border-white/10 hover:bg-white/10 text-white font-semibold transition-all"
           >
-            <Link href={`/product/${product.slug}`}>
+            <Link href={`/product/${product.slug}`} aria-label={`Voir les détails de ${product.name}`}>
               Voir les détails
             </Link>
           </Button>

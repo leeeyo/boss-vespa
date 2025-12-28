@@ -73,8 +73,8 @@ export function ShowcaseTabs({ products }: ShowcaseTabsProps) {
                   asChild
                   className="bg-linear-to-r from-amber-400 to-orange-500 text-black font-bold hover:from-amber-300 hover:to-orange-400"
                 >
-                  <Link href={`/product/${product.slug}`}>
-                    Voir le modèle
+                  <Link href={`/product/${product.slug}`} aria-label={`Voir les détails de ${product.name}`}>
+                    Découvrir
                   </Link>
                 </Button>
               </div>
