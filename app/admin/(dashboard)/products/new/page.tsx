@@ -311,7 +311,15 @@ export default function AddProductPage() {
         throw new Error(data.error || 'Erreur lors de la création')
       }
 
-      toast.success('Produit créé avec succès!')
+      const data = await response.json()
+      
+      // Show notification if slug was auto-modified
+      if (data.slugModified) {
+        toast.success(`Produit créé avec succès! Le slug a été modifié en "${data.slug}" car "${data.originalSlug}" existait déjà.`)
+      } else {
+        toast.success('Produit créé avec succès!')
+      }
+      
       router.push('/admin/products')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Erreur lors de la création du produit')

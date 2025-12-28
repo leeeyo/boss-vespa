@@ -3,7 +3,7 @@
 import { useSession } from '@/hooks/use-session'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Navigation } from '@/components/navigation'
+import { NavigationClientWrapper } from '@/components/navigation-client-wrapper'
 import { Footer } from '@/components/footer'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -76,7 +76,7 @@ export default function PreferencesPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white">
-      <Navigation />
+      <NavigationClientWrapper />
       
       <main className="container mx-auto px-4 pt-32 pb-20">
         <div className="max-w-6xl mx-auto">

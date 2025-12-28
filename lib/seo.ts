@@ -19,13 +19,22 @@ export function generateMetadata({
   type?: 'website' | 'article'
   noindex?: boolean
 }): Metadata {
-  const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`
+  // Don't append site name here - let layout.tsx template handle it
+  // This prevents double suffix like "Title | Boss Vespa Mahdia | Boss Vespa Mahdia"
   const fullDescription = description || defaultDescription
   const url = `${siteUrl}${path}`
   const ogImage = image || `${siteUrl}/images/hero.jpg`
+  // For OG/Twitter, we still want the full title with site name
+  const fullTitleForOG = title.includes(siteName) ? title : `${title} | ${siteName}`
+
+  // If title already includes site name, use absolute to bypass layout template
+  // Otherwise, let the layout template append the site name
+  const titleConfig = title.includes(siteName) 
+    ? { absolute: title } 
+    : title
 
   return {
-    title: fullTitle,
+    title: titleConfig,
     description: fullDescription,
     keywords: ['vespa', 'mahdia', 'tunisie', 'scooter', 'personnalisation', 'livraison', 'boss vespa'],
     authors: [{ name: 'Boss Vespa' }],
@@ -37,7 +46,7 @@ export function generateMetadata({
       locale: 'fr_TN',
       url,
       siteName,
-      title: fullTitle,
+      title: fullTitleForOG,
       description: fullDescription,
       images: [
         {
@@ -50,7 +59,7 @@ export function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: fullTitle,
+      title: fullTitleForOG,
       description: fullDescription,
       images: [ogImage],
     },

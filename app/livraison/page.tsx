@@ -15,7 +15,7 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 
-import { Navigation } from '@/components/navigation'
+import { NavigationClientWrapper } from '@/components/navigation-client-wrapper'
 import { Footer } from '@/components/footer'
 import {
   Accordion,
@@ -78,7 +78,7 @@ export default function LivraisonPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white">
-      <Navigation />
+      <NavigationClientWrapper />
 
       <main className="container mx-auto px-4 pt-28 pb-12 md:pt-36 md:pb-16">
         {/* Hero Slideshow */}

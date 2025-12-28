@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Heart } from 'lucide-react'
 
-import { Navigation } from '@/components/navigation'
+import { NavigationClientWrapper } from '@/components/navigation-client-wrapper'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -16,7 +16,7 @@ export default function WishlistPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white">
-      <Navigation />
+      <NavigationClientWrapper />
       
       <main className="container mx-auto px-4 py-24">
         {/* Header Section */}

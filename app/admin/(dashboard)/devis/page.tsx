@@ -22,6 +22,16 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   FileText,
   Search,
   ArrowLeft,
@@ -41,7 +51,8 @@ import {
   Filter,
   Send,
   FileQuestion,
-  XCircle,
+  Trash2,
+  Eye,
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -105,6 +116,11 @@ export default function AdminDevisPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [lightboxMedia, setLightboxMedia] = useState<string[]>([])
+
+  // Delete dialog
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<Devis | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const fetchDevis = useCallback(async () => {
     if (session?.user?.role !== 'admin') return
@@ -209,6 +225,34 @@ export default function AdminDevisPage() {
     setLightboxMedia(media)
     setLightboxIndex(index)
     setLightboxOpen(true)
+  }
+
+  const handleDeleteClick = (e: React.MouseEvent, devis: Devis) => {
+    e.stopPropagation()
+    setDeleteTarget(devis)
+    setShowDeleteDialog(true)
+  }
+
+  const handleDeleteDevis = async () => {
+    if (!deleteTarget) return
+
+    setIsDeleting(true)
+    try {
+      const res = await fetch(`/api/devis/${deleteTarget._id}`, {
+        method: 'DELETE',
+      })
+
+      if (res.ok) {
+        setDevisList(prev => prev.filter(d => d._id !== deleteTarget._id))
+        setPagination(prev => ({ ...prev, total: prev.total - 1 }))
+      }
+    } catch (error) {
+      console.error('Failed to delete devis:', error)
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
+      setDeleteTarget(null)
+    }
   }
 
   // Filter by search term (client-side)
@@ -393,6 +437,27 @@ export default function AdminDevisPage() {
                             <StickyNote size={18} />
                           </div>
                         )}
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              openDetail(devis)
+                            }}
+                            className="p-2 rounded-lg bg-white/5 hover:bg-amber-400/20 text-white/60 hover:text-amber-400 transition-colors"
+                            title="Voir les détails"
+                          >
+                            <Eye size={18} />
+                          </button>
+                          <button
+                            onClick={(e) => handleDeleteClick(e, devis)}
+                            className="p-2 rounded-lg bg-white/5 hover:bg-red-400/20 text-white/60 hover:text-red-400 transition-colors"
+                            title="Supprimer"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -453,55 +518,57 @@ export default function AdminDevisPage() {
           {selectedDevis && (
             <div className="space-y-6">
               {/* Customer Info */}
-              <div className="bg-white/5 rounded-xl p-4 space-y-3">
+              <div className="bg-white/5 rounded-xl p-4 space-y-3 overflow-hidden">
                 <h4 className="text-xs uppercase tracking-widest text-white/40 font-bold">
                   Informations Client
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-amber-400/10 flex items-center justify-center">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-amber-400/10 flex items-center justify-center shrink-0">
                       <User size={18} className="text-amber-400" />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs text-white/40">Nom</p>
-                      <p className="font-bold">{selectedDevis.name}</p>
+                      <p className="font-bold truncate" title={selectedDevis.name}>{selectedDevis.name}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-400/10 flex items-center justify-center">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-blue-400/10 flex items-center justify-center shrink-0">
                       <Mail size={18} className="text-blue-400" />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs text-white/40">Email</p>
                       <a
                         href={`mailto:${selectedDevis.email}`}
-                        className="font-bold hover:text-amber-400 transition-colors"
+                        className="font-bold hover:text-amber-400 transition-colors block truncate"
+                        title={selectedDevis.email}
                       >
                         {selectedDevis.email}
                       </a>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-400/10 flex items-center justify-center">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-400/10 flex items-center justify-center shrink-0">
                       <Phone size={18} className="text-emerald-400" />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs text-white/40">Téléphone</p>
                       <a
                         href={`tel:${selectedDevis.phone}`}
-                        className="font-bold hover:text-amber-400 transition-colors"
+                        className="font-bold hover:text-amber-400 transition-colors block truncate"
+                        title={selectedDevis.phone}
                       >
                         {selectedDevis.phone}
                       </a>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-purple-400/10 flex items-center justify-center">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-purple-400/10 flex items-center justify-center shrink-0">
                       <Clock size={18} className="text-purple-400" />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs text-white/40">Date de demande</p>
-                      <p className="font-bold">
+                      <p className="font-bold text-sm">
                         {new Date(selectedDevis.createdAt).toLocaleDateString('fr-FR', {
                           day: 'numeric',
                           month: 'long',
@@ -628,7 +695,7 @@ export default function AdminDevisPage() {
             <Button
               variant="outline"
               onClick={() => setIsDetailOpen(false)}
-              className="border-white/10"
+              className="border-white/10 text-black"
             >
               Fermer
             </Button>
@@ -698,6 +765,45 @@ export default function AdminDevisPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="bg-zinc-900 border-white/10 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-black flex items-center gap-2">
+              <Trash2 className="text-red-400" />
+              Supprimer ce devis ?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-white/60">
+              Cette action est irréversible. Le devis de{' '}
+              <strong className="text-white">{deleteTarget?.name}</strong> sera définitivement
+              supprimé.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="border-white/10 bg-white/5 hover:bg-white/10 text-white">
+              Annuler
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteDevis}
+              disabled={isDeleting}
+              className="bg-red-500 text-white hover:bg-red-600"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin mr-2" />
+                  Suppression...
+                </>
+              ) : (
+                <>
+                  <Trash2 size={16} className="mr-2" />
+                  Supprimer
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

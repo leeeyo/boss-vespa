@@ -24,6 +24,16 @@ const nextConfig = {
   },
   compress: true,
   poweredByHeader: false,
+  // Exclude MongoDB/Mongoose from client bundles
+  serverExternalPackages: [
+    'mongoose',
+    'mongodb',
+  ],
+  // Experimental: Ensure server components external packages work with Turbopack
+  experimental: {
+  },
+  // Turbopack configuration
+  turbopack: {},
 }
 
 export default nextConfig

@@ -7,7 +7,7 @@ import { Suspense } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Navigation } from '@/components/navigation'
+import { NavigationClientWrapper } from '@/components/navigation-client-wrapper'
 import { Footer } from '@/components/footer'
 
 function OrderSuccessContent() {
@@ -61,7 +61,7 @@ function OrderSuccessContent() {
 export default function OrderSuccessPage() {
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white flex flex-col">
-      <Navigation />
+      <NavigationClientWrapper />
       <Suspense fallback={
         <main className="flex-1 flex items-center justify-center p-4 py-24">
           <div className="text-center">

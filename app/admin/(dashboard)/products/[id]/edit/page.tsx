@@ -351,22 +351,53 @@ export default function EditProductPage() {
     setSaving(true)
 
     try {
-      const payload = {
+      // Validate and parse numeric values
+      const parsedPrice = parseFloat(formData.price)
+      if (isNaN(parsedPrice) || parsedPrice <= 0) {
+        throw new Error('Le prix doit être un nombre valide supérieur à 0')
+      }
+
+      const parsedStock = parseInt(formData.stock) || 0
+      if (isNaN(parsedStock) || parsedStock < 0) {
+        throw new Error('Le stock doit être un nombre valide supérieur ou égal à 0')
+      }
+
+      let parsedEnginePower: number | undefined = undefined
+      if (formData.category === 'scooter' && formData.enginePower) {
+        parsedEnginePower = parseInt(formData.enginePower)
+        if (isNaN(parsedEnginePower) || parsedEnginePower <= 0) {
+          throw new Error('La puissance du moteur doit être un nombre valide supérieur à 0')
+        }
+      }
+
+      const payload: any = {
         name: formData.name,
         slug: formData.slug,
-        subtitle: formData.subtitle,
+        subtitle: formData.subtitle || undefined,
         category: formData.category,
-        type: formData.type,
-        description: formData.description,
-        technicalInfo: formData.technicalInfo,
-        images: formData.images,
+        type: formData.type || undefined,
+        description: formData.description || undefined,
+        technicalInfo: formData.technicalInfo.length > 0 ? formData.technicalInfo : undefined,
+        images: formData.images.length > 0 ? formData.images : undefined,
         isActive: formData.isActive,
         isFeaturing: formData.isFeaturing,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock) || 0,
-        enginePower: formData.category === 'scooter' ? parseInt(formData.enginePower) || undefined : undefined,
-        color: formData.category === 'scooter' ? formData.color : undefined,
-        compatibility: formData.category === 'accessory' ? formData.compatibility : undefined,
+        price: parsedPrice,
+        stock: parsedStock,
+      }
+
+      // Only include scooter-specific fields if category is scooter
+      if (formData.category === 'scooter') {
+        if (parsedEnginePower) {
+          payload.enginePower = parsedEnginePower
+        }
+        if (formData.color) {
+          payload.color = formData.color
+        }
+      }
+
+      // Only include accessory-specific fields if category is accessory
+      if (formData.category === 'accessory' && formData.compatibility && formData.compatibility.length > 0) {
+        payload.compatibility = formData.compatibility
       }
 
       const response = await fetch(`/api/products/${productId}`, {
@@ -377,10 +408,24 @@ export default function EditProductPage() {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Erreur lors de la mise à jour')
+        // Handle both string errors and error arrays
+        const errorMessage = Array.isArray(data.error) 
+          ? data.error.map((e: any) => `${e.path?.join('.') || 'field'}: ${e.message || e}`).join(', ')
+          : typeof data.error === 'string'
+          ? data.error
+          : data.error?.message || JSON.stringify(data.error) || 'Erreur lors de la mise à jour'
+        throw new Error(errorMessage)
       }
 
-      toast.success('Produit mis à jour avec succès!')
+      const data = await response.json()
+      
+      // Show notification if slug was auto-modified
+      if (data.slugModified) {
+        toast.success(`Produit mis à jour avec succès! Le slug a été modifié en "${data.slug}" car "${data.originalSlug}" existait déjà.`)
+      } else {
+        toast.success('Produit mis à jour avec succès!')
+      }
+      
       router.push('/admin/products')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Erreur lors de la mise à jour du produit')

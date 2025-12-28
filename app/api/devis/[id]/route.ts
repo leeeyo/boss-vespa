@@ -58,3 +58,23 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   }
 }
 
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const admin = await requireAdmin()
+    if (admin instanceof NextResponse) return admin
+
+    await connectDB()
+
+    const { id } = await params
+    const devis = await Devis.findByIdAndDelete(id)
+
+    if (!devis) {
+      return NextResponse.json({ error: 'Devis not found' }, { status: 404 })
+    }
+
+    return NextResponse.json({ message: 'Devis deleted successfully' })
+  } catch (error) {
+    return handleError(error, 'Failed to delete devis')
+  }
+}
+

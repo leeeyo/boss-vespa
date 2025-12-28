@@ -1,6 +1,6 @@
 'use client'
 
-import { Navigation } from '@/components/navigation'
+import { NavigationClientWrapper } from '@/components/navigation-client-wrapper'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -9,9 +9,9 @@ import { CheckCircle, Home, Phone } from 'lucide-react'
 export default function ReservationSuccessPage() {
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 flex flex-col">
-      <Navigation />
+      <NavigationClientWrapper />
       
-      <main className="flex-1 flex items-center justify-center pt-24 pb-16">
+      <main className="flex-1 flex items-center justify-center pt-30 pb-16">
         <div className="container mx-auto px-4 max-w-lg text-center">
           {/* Success Icon */}
           <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -55,7 +55,7 @@ export default function ReservationSuccessPage() {
                 Retour à l&apos;accueil
               </Link>
             </Button>
-            <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/5">
+            <Button asChild variant="outline" className="border-white/20 text-black hover:bg-white/5">
               <Link href="/contact">
                 <Phone className="w-4 h-4 mr-2" />
                 Nous contacter

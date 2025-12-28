@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Phone, MapPin, Clock, Send } from 'lucide-react'
 
-import { Navigation } from '@/components/navigation'
+import { NavigationClientWrapper } from '@/components/navigation-client-wrapper'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,27 +19,8 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
-import { VespaProduct } from '@/data/vespa'
-import { IProduct } from '@/models/Product'
-
-type ProductsApiResponse = {
-  products: IProduct[]
-  pagination: {
-    page: number
-    limit: number
-    total: number
-    pages: number
-  }
-}
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -51,8 +32,8 @@ const formSchema = z.object({
   phone: z.string().min(8, {
     message: 'Le numéro doit contenir au moins 8 caractères.',
   }),
-  product: z.string().min(1, {
-    message: 'Veuillez sélectionner un produit.',
+  subject: z.string().min(2, {
+    message: 'Veuillez indiquer le sujet de votre demande.',
   }),
   message: z.string().min(10, {
     message: 'Le message doit contenir au moins 10 caractères.',
@@ -62,44 +43,6 @@ const formSchema = z.object({
 export default function ContactPage() {
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [products, setProducts] = useState<VespaProduct[]>([])
-
-  // Fetch products from API
-  React.useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const response = await fetch('/api/products?isActive=true')
-        if (response.ok) {
-          const data = (await response.json()) as ProductsApiResponse
-          // Transform API response to VespaProduct format
-          const transformed = data.products.map((product: IProduct) => {
-            const formattedPrice = new Intl.NumberFormat('fr-FR', {
-              style: 'decimal',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }).format(product.price) + ' TND'
-            
-            return {
-              slug: product.slug,
-              name: product.name,
-              subtitle: product.subtitle || '',
-              category: product.category,
-              color: product.color || '',
-              description: product.description || '',
-              price: formattedPrice,
-              specs: product.technicalInfo || [],
-              images: product.images || [],
-            }
-          })
-          setProducts(transformed)
-        }
-      } catch (error) {
-        console.error('Error fetching products:', error)
-      }
-    }
-
-    fetchProducts()
-  }, [])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -107,7 +50,7 @@ export default function ContactPage() {
       name: '',
       email: '',
       phone: '',
-      product: '',
+      subject: '',
       message: '',
     },
   })
@@ -115,23 +58,46 @@ export default function ContactPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
     
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    
-    console.log(values)
-    
-    setIsSubmitting(false)
-    form.reset()
-    
-    toast({
-      title: 'Demande envoyée !',
-      description: 'Nous vous contacterons bientôt.',
-    })
+    try {
+      const response = await fetch('/api/devis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
+          message: `[${values.subject}]\n\n${values.message}`,
+        }),
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erreur lors de l\'envoi')
+      }
+      
+      form.reset()
+      
+      toast({
+        title: 'Demande envoyée !',
+        description: 'Nous vous contacterons dans les plus brefs délais.',
+      })
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      toast({
+        title: 'Erreur',
+        description: 'Une erreur est survenue. Veuillez réessayer.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900">
-      <Navigation />
+      <NavigationClientWrapper />
       
       <main className="container mx-auto px-4 py-24">
         {/* Header Section */}
@@ -214,28 +180,17 @@ export default function ContactPage() {
 
                   <FormField
                     control={form.control}
-                    name="product"
+                    name="subject"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white/90">Modèle Vespa</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-amber-400 focus:ring-amber-400/20">
-                              <SelectValue placeholder="Sélectionnez un modèle" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-slate-900 border-white/10 text-white">
-                            {products.map((product) => (
-                              <SelectItem 
-                                key={product.slug} 
-                                value={product.name}
-                                className="focus:bg-white/10 focus:text-white"
-                              >
-                                {product.name} - {product.subtitle}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormLabel className="text-white/90">Sujet</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Ex: Vespa Primavera 125, pièces détachées, réparation..." 
+                            {...field} 
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-amber-400 focus:ring-amber-400/20"
+                          />
+                        </FormControl>
                         <FormMessage className="text-red-400" />
                       </FormItem>
                     )}
@@ -249,7 +204,7 @@ export default function ContactPage() {
                         <FormLabel className="text-white/90">Message</FormLabel>
                         <FormControl>
                           <Textarea 
-                            placeholder="Détails supplémentaires, préférences de couleur, etc..." 
+                            placeholder="Décrivez votre demande en détail : modèle souhaité, couleur, budget, questions..." 
                             className="resize-none bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-amber-400 focus:ring-amber-400/20" 
                             rows={6}
                             {...field} 

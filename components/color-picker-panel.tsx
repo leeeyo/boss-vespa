@@ -75,19 +75,9 @@ export function ColorPickerPanel({
       {onModelChange && (
         <div className="space-y-2">
           <label className="text-xs font-bold text-white/50 uppercase tracking-wider">
-            Modèle Vespa
+            Modèle Vespa <span className="text-amber-400">*</span>
           </label>
           <div className="grid grid-cols-3 gap-1.5">
-            <button
-              onClick={() => onModelChange(null)}
-              className={`px-2 py-2 rounded-lg text-xs font-bold transition-all ${
-                !selectedModel
-                  ? 'bg-amber-400 text-slate-900'
-                  : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              Tous
-            </button>
             {VESPA_MODELS.map((model) => (
               <button
                 key={model}
@@ -102,6 +92,11 @@ export function ColorPickerPanel({
               </button>
             ))}
           </div>
+          {!selectedModel && (
+            <p className="text-amber-400/80 text-xs">
+              Veuillez sélectionner un modèle
+            </p>
+          )}
         </div>
       )}
 

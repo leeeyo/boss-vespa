@@ -5,7 +5,7 @@ import { useSession } from '@/hooks/use-session'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { ShoppingCart, Package, Users, DollarSign, FileText, ArrowRight, Palette, FileQuestion, Settings } from 'lucide-react'
+import { ShoppingCart, Package, Users, DollarSign, FileText, ArrowRight, Palette, FileQuestion, Bike } from 'lucide-react'
 
 interface DashboardStats {
   orders: {
@@ -26,6 +26,10 @@ interface DashboardStats {
     pending: number
   }
   devis: {
+    total: number
+    pending: number
+  }
+  scooterListings: {
     total: number
     pending: number
   }
@@ -141,12 +145,13 @@ export default function AdminDashboardPage() {
       badge: stats?.devis?.pending ? `${stats.devis.pending} en attente` : null
     },
     {
-      title: 'Paramètres',
-      description: 'Configuration de la boutique',
-      icon: Settings,
-      color: 'text-slate-400',
-      href: '/admin/settings',
-      stats: 'Site, Email, Paiement, Livraison',
+      title: 'Scooters à vendre',
+      description: 'Propositions de rachat',
+      icon: Bike,
+      color: 'text-emerald-400',
+      href: '/admin/scooter-listings',
+      stats: `${stats?.scooterListings?.total || 0} annonces`,
+      badge: stats?.scooterListings?.pending ? `${stats.scooterListings.pending} en attente` : null
     },
   ]
 

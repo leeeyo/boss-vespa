@@ -122,6 +122,7 @@ ProductSchema.index({ isFeaturing: 1 })
 ProductSchema.index({ isActive: 1 })
 ProductSchema.index({ 'filterAttributes.colors': 1 })
 ProductSchema.index({ enginePower: 1 })
+ProductSchema.index({ type: 1 })
 
 const Product: Model<IProduct> = mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema)
 

@@ -3,7 +3,7 @@
 import React from 'react'
 import { useState, Suspense, useEffect, startTransition } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Navigation } from '@/components/navigation'
+import { NavigationClientWrapper } from '@/components/navigation-client-wrapper'
 import { CustomizerScene } from '@/components/customizer-scene'
 import { ColorPickerPanel } from '@/components/color-picker-panel'
 import { WebGLFallback } from '@/components/webgl-fallback'
@@ -33,8 +33,11 @@ function PersonalizationContent() {
   const modelParam = searchParams.get('model') as VespaModel | null
   
   const [currentColor, setCurrentColor] = useState(colorParam || '#3d7c4a') // Default to Vert Jungle
+  // Default to first model if none selected
   const [selectedModel, setSelectedModel] = useState<VespaModel | null>(
-    modelParam && VESPA_MODELS.includes(modelParam as VespaModel) ? modelParam as VespaModel : null
+    modelParam && VESPA_MODELS.includes(modelParam as VespaModel) 
+      ? modelParam as VespaModel 
+      : null
   )
   const [selectedProduct, setSelectedProduct] = useState<VespaProduct | null>(null)
   const [webglError, setWebglError] = useState(false)
@@ -126,9 +129,15 @@ function PersonalizationContent() {
   }
 
   const handleValidate = () => {
+    // Require model selection before proceeding
+    if (!selectedModel) {
+      alert('Veuillez sélectionner un modèle Vespa avant de continuer')
+      return
+    }
+    
     const params = new URLSearchParams()
     params.set('color', currentColor)
-    if (selectedModel) params.set('model', selectedModel)
+    params.set('model', selectedModel)
     if (selectedProduct) params.set('product', selectedProduct.slug)
     
     router.push(`/personalization/reservation?${params.toString()}`)
@@ -136,9 +145,9 @@ function PersonalizationContent() {
 
   return (
     <div className="h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 flex flex-col overflow-hidden">
-      <Navigation />
+      <NavigationClientWrapper />
 
-      <main className="flex-1 flex flex-col lg:flex-row pt-20 lg:pt-16 overflow-hidden">
+      <main className="flex-1 flex flex-col lg:flex-row pt-20 lg:pt-16 overflow-hidden mt-7">
         {/* 3D Scene - Left Side */}
         <div className="flex-1 relative min-h-0">
           <div className="w-full h-full">
@@ -179,7 +188,7 @@ function PersonalizationContent() {
           )}
 
           {/* Share Button - Top Right (desktop) */}
-          <div className="absolute top-4 right-4 hidden lg:block z-10">
+          <div className="absolute top-4 right-40 hidden lg:block z-10">
             <Button
               onClick={handleShare}
               size="sm"
@@ -207,9 +216,14 @@ function PersonalizationContent() {
                 <Button
                   onClick={handleValidate}
                   size="sm"
-                  className="bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold h-8 text-xs"
+                  disabled={!selectedModel}
+                  className={`font-bold h-8 text-xs ${
+                    selectedModel 
+                      ? 'bg-amber-400 hover:bg-amber-300 text-slate-900' 
+                      : 'bg-white/10 text-white/40 cursor-not-allowed'
+                  }`}
                 >
-                  Continuer
+                  {selectedModel ? 'Continuer' : 'Choisir un modèle'}
                   <ChevronRight className="w-3 h-3 ml-1" />
                 </Button>
               </div>
@@ -326,7 +340,9 @@ export default function PersonalizationPage() {
     <Suspense
       fallback={
         <div className="h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 flex flex-col overflow-hidden">
-          <Navigation />
+          <div className="fixed top-0 left-0 right-0 z-50 flex flex-col shadow-[0_12px_32px_rgba(0,0,0,0.45)]">
+            <div className="h-16 bg-linear-to-r from-slate-950 via-slate-900 to-gray-900 border-b border-white/10" />
+          </div>
           <main className="flex-1 flex items-center justify-center pt-16">
             <div className="text-white/60 text-center">
               <div className="w-12 h-12 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />

@@ -7,7 +7,7 @@ import * as z from 'zod'
 import { MapPin, Send, ShoppingBag } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
-import { Navigation } from '@/components/navigation'
+import { NavigationClientWrapper } from '@/components/navigation-client-wrapper'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
@@ -161,7 +161,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900">
-      <Navigation />
+      <NavigationClientWrapper />
       
       <main className="container mx-auto px-4 py-24">
         {/* Header Section */}

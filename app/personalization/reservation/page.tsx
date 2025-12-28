@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Navigation } from '@/components/navigation'
+import { NavigationClientWrapper } from '@/components/navigation-client-wrapper'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,6 +27,7 @@ import {
 import { toast } from 'sonner'
 import { VespaModel } from '@/utils/color-matching'
 import { IProduct } from '@/models/Product'
+import { getVespaModelPrice } from '@/utils/vespa-price-estimation'
 
 interface Accessory {
   _id: string
@@ -117,13 +118,15 @@ function ReservationContent() {
     )
   }
 
+  // Get model base price (use selected product price if available, otherwise use model estimation)
+  const modelBasePrice = selectedProduct?.price || (modelParam ? getVespaModelPrice(modelParam) : 0)
+  
   const calculateTotal = () => {
     const accessoriesTotal = accessories
       .filter(a => selectedAccessories.includes(a.slug))
       .reduce((sum, a) => sum + a.price, 0)
     
-    const basePrice = selectedProduct?.price || 0
-    return basePrice + accessoriesTotal
+    return modelBasePrice + accessoriesTotal
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -146,25 +149,47 @@ function ReservationContent() {
     setSubmitting(true)
 
     try {
+      const payload = {
+        color: colorParam,
+        vespaModel: modelParam || 'Non spécifié',
+        selectedProductSlug: productSlug || undefined,
+        accessories: selectedAccessories.length > 0 ? selectedAccessories : undefined,
+        contactInfo: {
+          name: contactInfo.name.trim(),
+          email: contactInfo.email.trim(),
+          phone: contactInfo.phone.trim(),
+          address: contactInfo.address.trim() || undefined,
+        },
+        deliveryPreference,
+        notes: notes.trim() || undefined,
+        estimatedPrice: calculateTotal() > 0 ? calculateTotal() : undefined,
+      }
+
+      console.log('Submitting payload:', payload)
+
       const response = await fetch('/api/personalization', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          color: colorParam,
-          vespaModel: modelParam || 'Non spécifié',
-          selectedProductSlug: productSlug,
-          accessories: selectedAccessories,
-          contactInfo,
-          deliveryPreference,
-          notes,
-          estimatedPrice: calculateTotal(),
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la soumission')
+        const errorData = await response.json().catch(() => ({}))
+        console.error('API Error:', errorData)
+        
+        // Show validation errors if available
+        if (errorData.error && Array.isArray(errorData.error)) {
+          const errorMessages = errorData.error.map((err: { path?: string[]; message?: string }) => 
+            `${err.path?.join('.') || 'Field'}: ${err.message || 'Invalid'}`
+          ).join(', ')
+          toast.error(`Erreur de validation: ${errorMessages}`)
+        } else {
+          toast.error(errorData.error?.message || 'Erreur lors de la soumission')
+        }
+        return
       }
 
+      await response.json()
       toast.success('Demande envoyée avec succès!')
       router.push('/personalization/success')
     } catch (error) {
@@ -177,7 +202,7 @@ function ReservationContent() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900">
-      <Navigation />
+      <NavigationClientWrapper />
       
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 pt-5">
@@ -228,8 +253,13 @@ function ReservationContent() {
                     <div>
                       <p className="text-white/50 text-xs uppercase tracking-wider">Modèle</p>
                       <p className="text-white font-bold">
-                        {modelParam ? `Vespa ${modelParam}` : 'Tous modèles'}
+                        {modelParam ? `Vespa ${modelParam}` : 'Non spécifié'}
                       </p>
+                      {modelBasePrice > 0 && !selectedProduct && (
+                        <p className="text-amber-400 text-xs font-semibold">
+                          ~{modelBasePrice.toLocaleString()} TND
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -242,6 +272,9 @@ function ReservationContent() {
                       <div>
                         <p className="text-white/50 text-xs uppercase tracking-wider">Produit</p>
                         <p className="text-white font-bold text-sm truncate">{selectedProduct.name}</p>
+                        <p className="text-amber-400 text-xs font-semibold">
+                          {selectedProduct.price.toLocaleString()} TND
+                        </p>
                       </div>
                     </div>
                   )}

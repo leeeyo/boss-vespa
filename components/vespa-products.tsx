@@ -3,14 +3,15 @@ import Link from 'next/link'
 
 import { getFeaturedProducts } from '@/lib/products'
 import { Button } from '@/components/ui/button'
+import { ProductCardActions } from './product-card-actions'
 
 export async function VespaProducts() {
-  const featured = await getFeaturedProducts(2)
+  const featured = await getFeaturedProducts(4)
 
   return (
     <section
       id="featured"
-      className="py-20 px-4 bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white border-y border-white/5"
+      className="mt-10 py-20 px-4 bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white border-y border-white/5"
     >
       <div className="container mx-auto">
         <div className="mb-12 flex flex-col items-center gap-4 text-center overflow-visible">
@@ -24,11 +25,11 @@ export async function VespaProducts() {
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
           {featured.map((vespa) => (
             <article
               key={vespa.slug}
-              className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur shadow-[0_30px_60px_rgba(0,0,0,0.55)]"
+              className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur shadow-[0_30px_60px_rgba(0,0,0,0.55)] group hover:scale-[1.02] transition-transform duration-300"
             >
               <div className="flex flex-col lg:flex-row">
                 <div className="relative lg:w-2/5 h-64 lg:h-[400px] shrink-0">
@@ -57,14 +58,22 @@ export async function VespaProducts() {
                   </div>
                   <div className="flex items-center justify-between pt-4 mt-auto">
                     <span className="text-xl font-semibold text-white">{vespa.price}</span>
-                    <Button asChild className="bg-linear-to-r from-amber-400 to-orange-500 text-black font-bold hover:from-amber-300 hover:to-orange-400">
-                      <Link href={`/product/${vespa.slug}`}>Voir le modèle</Link>
-                    </Button>
+                    <ProductCardActions product={vespa} />
                   </div>
                 </div>
               </div>
             </article>
           ))}
+        </div>
+        
+        <div className="mt-12 text-center">
+          <Button 
+            asChild 
+            size="lg"
+            className="bg-linear-to-r from-amber-400 to-orange-500 text-black font-bold hover:from-amber-300 hover:to-orange-400 shadow-[0_18px_35px_rgba(250,204,21,0.45)]"
+          >
+            <Link href="/collection">Voir tous les modèles</Link>
+          </Button>
         </div>
       </div>
     </section>

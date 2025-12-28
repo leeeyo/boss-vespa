@@ -5,9 +5,10 @@ import { requireAuth, handleError, requireAdmin } from '@/lib/api-helpers'
 import { z } from 'zod'
 
 const updatePersonalizationSchema = z.object({
-  status: z.enum(['pending', 'approved', 'rejected', 'completed']).optional(),
+  status: z.enum(['pending', 'contacted', 'quoted', 'approved', 'rejected', 'completed']).optional(),
   adminNotes: z.string().optional(),
   estimatedPrice: z.number().optional(),
+  finalPrice: z.number().optional(),
 })
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

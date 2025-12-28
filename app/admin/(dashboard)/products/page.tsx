@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useSession } from '@/hooks/use-session'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
@@ -22,10 +22,12 @@ import {
   X,
   ChevronDown,
   Bike,
-  ShoppingBag
+  ShoppingBag,
+  AlertTriangle
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { toast } from 'sonner'
 
 interface Product {
   _id: string
@@ -55,6 +57,8 @@ export default function AdminProductsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [sortBy, setSortBy] = useState<SortBy>('category')
   const [showFilters, setShowFilters] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -62,7 +66,7 @@ export default function AdminProductsPage() {
     }
   }, [status, router])
 
-  useEffect(() => {
+  const fetchProducts = useCallback(() => {
     if (session?.user?.role === 'admin') {
       fetch('/api/products?isActive=all')
         .then((res) => res.json())
@@ -73,6 +77,35 @@ export default function AdminProductsPage() {
         .catch(() => setLoading(false))
     }
   }, [session])
+
+  useEffect(() => {
+    fetchProducts()
+  }, [fetchProducts])
+
+  const handleDelete = async () => {
+    if (!deleteConfirm) return
+
+    setDeleting(true)
+    try {
+      const response = await fetch(`/api/products/${deleteConfirm.id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Erreur lors de la suppression')
+      }
+
+      toast.success('Produit supprimé avec succès')
+      setDeleteConfirm(null)
+      // Refresh products list
+      fetchProducts()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Erreur lors de la suppression du produit')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   // Memoized filtered and sorted products
   const filteredProducts = useMemo(() => {
@@ -153,6 +186,52 @@ export default function AdminProductsPage() {
   }
 
   return (
+    <>
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-slate-800 border border-white/10 rounded-2xl p-6 max-w-md w-full animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 rounded-full bg-rose-500/20 text-rose-400">
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Supprimer ce produit ?</h3>
+                <p className="text-white/60 text-sm">Cette action est irréversible</p>
+              </div>
+            </div>
+            <p className="text-white/70 mb-6">
+              Êtes-vous sûr de vouloir supprimer <span className="font-bold text-white">{deleteConfirm.name}</span> ? 
+              Cette action ne peut pas être annulée.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 border-white/10 bg-white/5 text-white hover:bg-white/10"
+                disabled={deleting}
+              >
+                Annuler
+              </Button>
+              <Button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 bg-rose-500 hover:bg-rose-400 text-white"
+              >
+                {deleting ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <Trash2 size={18} className="mr-2" />
+                    Supprimer
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
     <div className="container mx-auto px-4 py-8 text-white">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
@@ -419,6 +498,10 @@ export default function AdminProductsPage() {
                         variant="outline" 
                         className="px-3 border-white/10 bg-white/5 hover:bg-rose-500/20 text-rose-400 py-1 h-9"
                         aria-label={`Supprimer ${product.name}`}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setDeleteConfirm({ id: product._id, name: product.name })
+                        }}
                       >
                         <Trash2 size={14} aria-hidden="true" />
                       </Button>
@@ -522,6 +605,7 @@ export default function AdminProductsPage() {
                         size="sm"
                         className="border-white/10 bg-white/5 hover:bg-rose-500/20 text-rose-400"
                         aria-label={`Supprimer ${product.name}`}
+                        onClick={() => setDeleteConfirm({ id: product._id, name: product.name })}
                       >
                         <Trash2 size={14} aria-hidden="true" />
                       </Button>
@@ -570,5 +654,6 @@ export default function AdminProductsPage() {
         )}
       </div>
     </div>
+    </>
   )
 }

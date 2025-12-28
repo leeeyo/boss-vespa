@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import Product from '@/models/Product'
 import { requireAdmin, handleError } from '@/lib/api-helpers'
+import { generateUniqueSlug } from '@/lib/slug-utils'
 import { z } from 'zod'
 
 const productSchema = z.object({
@@ -124,13 +125,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = productSchema.parse(body)
 
-    const existingProduct = await Product.findOne({ slug: validatedData.slug })
-    if (existingProduct) {
-      return NextResponse.json({ error: 'Product with this slug already exists' }, { status: 400 })
-    }
+    // Generate unique slug if the provided one already exists
+    const uniqueSlug = await generateUniqueSlug(validatedData.slug)
+    const slugWasModified = uniqueSlug !== validatedData.slug
 
     const product = new Product({
       ...validatedData,
+      slug: uniqueSlug,
       currency: validatedData.currency || 'TND',
       stock: validatedData.stock ?? 0,
       isActive: validatedData.isActive ?? true,
@@ -139,7 +140,11 @@ export async function POST(request: NextRequest) {
 
     await product.save()
 
-    return NextResponse.json(product, { status: 201 })
+    return NextResponse.json({
+      ...product.toObject(),
+      slugModified: slugWasModified,
+      originalSlug: slugWasModified ? validatedData.slug : undefined,
+    }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors }, { status: 400 })

@@ -4,6 +4,7 @@ import Order from '@/models/Order'
 import Product from '@/models/Product'
 import Personalization from '@/models/Personalization'
 import Devis from '@/models/Devis'
+import ScooterListing from '@/models/ScooterListing'
 import Blog from '@/models/Blog'
 import { requireAdmin, handleError } from '@/lib/api-helpers'
 
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     const startDateParam = searchParams.get('startDate')
     const endDateParam = searchParams.get('endDate')
     
-    let dateFilter: { $gte?: Date; $lte?: Date } = {}
+    const dateFilter: { $gte?: Date; $lte?: Date } = {}
     if (startDateParam) {
       dateFilter.$gte = new Date(startDateParam)
     }
@@ -39,6 +40,8 @@ export async function GET(request: NextRequest) {
       pendingPersonalizations,
       totalDevis,
       pendingDevis,
+      totalScooterListings,
+      pendingScooterListings,
       totalBlogPosts,
       publishedBlogPosts,
     ] = await Promise.all([
@@ -61,6 +64,8 @@ export async function GET(request: NextRequest) {
       Personalization.countDocuments({ status: 'pending' }),
       Devis.countDocuments(),
       Devis.countDocuments({ status: 'pending' }),
+      ScooterListing.countDocuments(),
+      ScooterListing.countDocuments({ status: 'pending' }),
       Blog.countDocuments(),
       Blog.countDocuments({ isPublished: true }),
     ])
@@ -68,7 +73,7 @@ export async function GET(request: NextRequest) {
     const revenue = totalRevenue[0]?.total || 0
 
     // Calculate monthly revenue breakdown (last 12 months or filtered range)
-    const monthlyMatchFilter: any = { paid: true }
+    const monthlyMatchFilter: { paid: boolean; createdAt?: { $gte?: Date; $lte?: Date } } = { paid: true }
     if (Object.keys(dateFilter).length > 0) {
       monthlyMatchFilter.createdAt = dateFilter
     }
@@ -136,7 +141,7 @@ export async function GET(request: NextRequest) {
       firstDayPreviousMonth = new Date(prevMonth.getFullYear(), prevMonth.getMonth(), 1)
     }
 
-    const currentMonthMatchFilter: any = { paid: true }
+    const currentMonthMatchFilter: { paid: boolean; createdAt?: { $gte?: Date; $lte?: Date } } = { paid: true }
     if (startDateParam && endDateParam) {
       currentMonthMatchFilter.createdAt = dateFilter
     } else {
@@ -155,7 +160,7 @@ export async function GET(request: NextRequest) {
       },
     ])
 
-    const previousMonthMatchFilter: any = { paid: true }
+    const previousMonthMatchFilter: { paid: boolean; createdAt?: { $gte?: Date; $lte?: Date; $lt?: Date } } = { paid: true }
     if (startDateParam && endDateParam) {
       // For filtered period, calculate previous period of same length
       const periodStart = new Date(startDateParam)
@@ -202,7 +207,7 @@ export async function GET(request: NextRequest) {
     const averageOrderValue = paidOrdersCount > 0 ? revenue / paidOrdersCount : 0
 
     // Fetch recent paid transactions (optionally filtered by date)
-    const recentTransactionsFilter: any = { paid: true }
+    const recentTransactionsFilter: { paid: boolean; createdAt?: { $gte?: Date; $lte?: Date } } = { paid: true }
     if (Object.keys(dateFilter).length > 0) {
       recentTransactionsFilter.createdAt = dateFilter
     }
@@ -214,14 +219,24 @@ export async function GET(request: NextRequest) {
       .select('orderId total paymentMethod createdAt status userId')
       .lean()
 
-    const formattedTransactions = recentTransactions.map((transaction: any) => ({
-      orderId: transaction.orderId,
-      total: transaction.total,
-      paymentMethod: transaction.paymentMethod,
-      createdAt: transaction.createdAt,
-      status: transaction.status,
-      userName: transaction.userId?.name || transaction.userId?.email || 'Client',
-    }))
+    const formattedTransactions = recentTransactions.map((transaction) => {
+      const txn = transaction as unknown as {
+        orderId: string
+        total: number
+        paymentMethod: string
+        createdAt: Date
+        status: string
+        userId?: { name?: string; email?: string }
+      }
+      return {
+        orderId: txn.orderId,
+        total: txn.total,
+        paymentMethod: txn.paymentMethod,
+        createdAt: txn.createdAt,
+        status: txn.status,
+        userName: txn.userId?.name || txn.userId?.email || 'Client',
+      }
+    })
 
     // Recent orders (last 7 days)
     const sevenDaysAgo = new Date()
@@ -290,6 +305,10 @@ export async function GET(request: NextRequest) {
       devis: {
         total: totalDevis,
         pending: pendingDevis,
+      },
+      scooterListings: {
+        total: totalScooterListings,
+        pending: pendingScooterListings,
       },
       blog: {
         total: totalBlogPosts,

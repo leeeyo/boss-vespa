@@ -4,8 +4,11 @@ import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 import { CollectionFilters } from '@/components/collection-filters'
 import { CollectionGrid } from '@/components/collection-grid'
+import { Breadcrumb } from '@/components/breadcrumb'
 import { Button } from '@/components/ui/button'
-import { Filter } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Filter, X } from 'lucide-react'
+import Link from 'next/link'
 import {
   Sheet,
   SheetContent,
@@ -31,6 +34,7 @@ export const metadata: Metadata = genMeta({
 type SearchParams = {
   search?: string
   category?: 'scooter' | 'accessory' | 'all'
+  type?: string
   colors?: string
   engines?: string
   features?: string
@@ -50,6 +54,7 @@ export default async function CollectionPage({ searchParams }: CollectionPagePro
   const filters: FilterOptions = {
     search: params.search,
     category: params.category,
+    type: params.type,
     colors: params.colors?.split(',').filter(Boolean),
     engines: params.engines?.split(',').filter(Boolean),
     features: params.features?.split(',').filter(Boolean),
@@ -91,16 +96,39 @@ export default async function CollectionPage({ searchParams }: CollectionPagePro
       <Navigation />
 
       <main className="container mx-auto px-4 py-24">
+        {/* Breadcrumb */}
+        <Breadcrumb 
+          items={[
+            { name: 'Boutique', url: '/collection' },
+            ...(params.type ? [{ name: params.type, url: `/collection?type=${encodeURIComponent(params.type)}` }] : []),
+          ]}
+        />
+
         {/* Header */}
         <div className="mb-12 text-center py-5">
           <p className="text-xs uppercase tracking-[0.5em] text-amber-300 mb-4">Boutique</p>
           <h1 className="text-4xl md:text-6xl font-black bg-linear-to-r from-amber-400 via-rose-400 to-sky-400 bg-clip-text text-transparent mb-4 py-2">
-            Catalogue Boss Vespa
+            {params.type ? `Vespa ${params.type}` : 'Catalogue Boss Vespa'}
           </h1>
           <p className="text-white/80 max-w-2xl mx-auto">
             Découvrez nos scooters exclusifs et une large gamme d&apos;accessoires pour personnaliser votre expérience.
           </p>
         </div>
+
+        {/* Active Filters */}
+        {params.type && (
+          <div className="mb-6 flex items-center gap-2 justify-center">
+            <Badge variant="outline" className="border-amber-400/50 text-amber-400 bg-amber-400/10 px-4 py-2">
+              Modèle: {params.type}
+              <Link 
+                href="/collection"
+                className="ml-2 hover:text-amber-300 transition-colors"
+              >
+                <X className="w-4 h-4 inline" />
+              </Link>
+            </Badge>
+          </div>
+        )}
 
          {/* Mobile Filters Button */}
          <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-max">

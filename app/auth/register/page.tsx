@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Navigation } from '@/components/navigation'
+import { NavigationClientWrapper } from '@/components/navigation-client-wrapper'
 import { Footer } from '@/components/footer'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, Mail, Lock, User, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react'
@@ -80,7 +80,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white flex flex-col">
-      <Navigation />
+      <NavigationClientWrapper />
       
       <main className="flex-1 flex items-center justify-center p-4 pt-32 pb-20 relative overflow-hidden">
         {/* Decorative elements */}

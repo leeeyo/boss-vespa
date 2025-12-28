@@ -5,6 +5,7 @@ import { VespaProduct } from '@/data/vespa'
 export type FilterOptions = {
   search?: string
   category?: 'scooter' | 'accessory' | 'all'
+  type?: string
   colors?: string[]
   engines?: string[]
   features?: string[]
@@ -153,6 +154,11 @@ export async function filterProducts(filters: FilterOptions): Promise<VespaProdu
     query.category = filters.category
   }
 
+  // Type filter (for scooter model types like GTS, GTV, PRIMAVERA, etc.)
+  if (filters.type) {
+    query.type = filters.type
+  }
+
   // Color filter
   if (filters.colors && filters.colors.length > 0) {
     query.color = { $in: filters.colors }
@@ -209,5 +215,43 @@ export async function filterProducts(filters: FilterOptions): Promise<VespaProdu
   }
 
   return products.map((p) => transformProductToVespaProduct(p as IProduct))
+}
+
+/**
+ * Get scooter models grouped by type
+ * Returns models with their product count, sorted by popularity
+ */
+export async function getScooterModelsByType(): Promise<{ modelType: string; products: VespaProduct[]; count: number }[]> {
+  await connectDB()
+  const products = await Product.find({ 
+    isActive: true,
+    category: 'scooter',
+    type: { $exists: true, $nin: [null, ''] }
+  }).lean()
+
+  // Group products by type
+  const groupedByType = new Map<string, VespaProduct[]>()
+  
+  products.forEach((product) => {
+    const productObj = product as IProduct
+    const type = productObj.type
+    if (type) {
+      if (!groupedByType.has(type)) {
+        groupedByType.set(type, [])
+      }
+      groupedByType.get(type)!.push(transformProductToVespaProduct(productObj))
+    }
+  })
+
+  // Convert to array and sort by count descending
+  const result = Array.from(groupedByType.entries())
+    .map(([modelType, products]) => ({
+      modelType,
+      products,
+      count: products.length,
+    }))
+    .sort((a, b) => b.count - a.count)
+
+  return result
 }
 

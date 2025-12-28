@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { ArrowDown, MapPin } from 'lucide-react'
+import { ArrowDown } from 'lucide-react'
 
 import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { Button } from '@/components/ui/button'
@@ -9,9 +9,9 @@ import { Button } from '@/components/ui/button'
 import heroStill from '@/public/images/hero.jpg'
 
 const highlights = [
-  { fr: 'Vente & Showroom', en: 'Sales & Showroom' },
-  { fr: 'Custom haute couture', en: 'Bespoke customization' },
-  { fr: 'Livraison nationale', en: 'Nationwide delivery' },
+  { fr: '50+ modèles disponibles', en: '50+ models available' },
+  { fr: 'Livraison gratuite', en: 'Free delivery' },
+  { fr: 'Garantie 2 ans', en: '2 year warranty' },
 ]
 
 export function Hero() {
@@ -27,21 +27,17 @@ export function Hero() {
 
       <div className="relative z-10">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 min-h-[calc(100vh-4rem)] py-15 lg:py-18 px-4 lg:px-18">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 min-h-[calc(100vh-4rem)] lg:py-18 px-4 lg:px-18">
             <div className="w-full max-w-2xl text-center lg:text-left space-y-6 lg:order-1 order-2">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white shadow-sm backdrop-blur mx-auto lg:mx-0">
-                <MapPin className="h-4 w-4" />
-                Mahdia, Tunisie
-              </div>
               <div>
                 <p className="text-sm uppercase tracking-[0.4em] text-amber-300 font-semibold">Boss Vespa</p>
                 <h1 className="text-3xl sm:text-5xl xl:text-6xl font-black text-white leading-tight text-balance">
-                  L&apos;expérience Vespa la plus colorée du pays
+                  Découvrez votre Vespa idéale
                 </h1>
               </div>
               <p className="text-base lg:text-lg text-white/80 text-balance">
-                Vente, personnalisation artistique et livraison dans toute la Tunisie avec une équipe passionnée qui vit
-                Vespa au quotidien.
+                Explorez notre large sélection de modèles Vespa et personnalisez votre scooter selon vos envies. 
+                Des couleurs vibrantes aux finitions premium, trouvez le modèle qui vous correspond.
               </p>
 
               <div className="flex flex-wrap justify-center lg:justify-start gap-2 lg:gap-3">
@@ -67,9 +63,9 @@ export function Hero() {
                   size="lg"
                   variant="outline"
                   className="w-full sm:w-auto border-white/40 bg-white/5 text-white font-semibold shadow-[0_14px_28px_rgba(0,0,0,0.55)] hover:bg-white/15 translate-y-0 transition-transform hover:-translate-y-0.5 active:translate-y-0"
-                  onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() => window.location.href = '/personalization'}
                 >
-                  Contactez-nous
+                  Personnaliser ma Vespa
                 </Button>
               </div>
 
@@ -86,6 +82,7 @@ export function Hero() {
                     src={heroStill}
                     alt="Vespa colorée au showroom Boss Vespa"
                     fill
+                    sizes="(min-width: 1024px) 25vw, 50vw"
                     className="object-cover"
                     priority
                   />
@@ -106,9 +103,9 @@ export function Hero() {
               </div>
 
               <div className="rounded-2xl bg-white/10 border border-white/20 p-4 shadow-xl backdrop-blur">
-                <p className="text-sm uppercase tracking-[0.3em] text-amber-200">Mahdia • Tunisia</p>
+                <p className="text-sm uppercase tracking-[0.3em] text-amber-200">Pourquoi Boss Vespa</p>
                 <p className="text-lg font-semibold text-white">
-                  Vente · Personnalisation · Livraison — tout sous le même toit.
+                  Large choix de modèles · Personnalisation sur mesure · Livraison dans toute la Tunisie
                 </p>
               </div>
             </div>

@@ -17,9 +17,11 @@ import {
   Loader2,
   Calendar,
   User as UserIcon,
+  AlertTriangle,
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { toast } from 'sonner'
 
 interface BlogPost {
   _id: string
@@ -41,6 +43,8 @@ export default function AdminBlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [deleteConfirm, setDeleteConfirm] = useState<{ slug: string; title: string } | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -48,7 +52,7 @@ export default function AdminBlogPage() {
     }
   }, [status, router])
 
-  useEffect(() => {
+  const fetchPosts = () => {
     if (session?.user?.role === 'admin') {
       fetch('/api/blog?admin=true')
         .then((res) => res.json())
@@ -58,7 +62,36 @@ export default function AdminBlogPage() {
         })
         .catch(() => setLoading(false))
     }
+  }
+
+  useEffect(() => {
+    fetchPosts()
   }, [session])
+
+  const handleDelete = async () => {
+    if (!deleteConfirm) return
+
+    setDeleting(true)
+    try {
+      const response = await fetch(`/api/blog/${deleteConfirm.slug}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Erreur lors de la suppression')
+      }
+
+      toast.success('Article supprimé avec succès')
+      setDeleteConfirm(null)
+      // Refresh posts list
+      fetchPosts()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Erreur lors de la suppression de l\'article')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   if (status === 'loading' || loading) {
     return (
@@ -74,6 +107,52 @@ export default function AdminBlogPage() {
   )
 
   return (
+    <>
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-100 flex items-center justify-center p-4">
+          <div className="bg-slate-800 border border-white/10 rounded-2xl p-6 max-w-md w-full animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 rounded-full bg-rose-500/20 text-rose-400">
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Supprimer cet article ?</h3>
+                <p className="text-white/60 text-sm">Cette action est irréversible</p>
+              </div>
+            </div>
+            <p className="text-white/70 mb-6">
+              Êtes-vous sûr de vouloir supprimer <span className="font-bold text-white">{deleteConfirm.title}</span> ? 
+              Cette action ne peut pas être annulée.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 border-white/10 bg-white/5 text-white hover:bg-white/10"
+                disabled={deleting}
+              >
+                Annuler
+              </Button>
+              <Button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 bg-rose-500 hover:bg-rose-400 text-white"
+              >
+                {deleting ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <Trash2 size={18} className="mr-2" />
+                    Supprimer
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
     <div className="container mx-auto px-4 py-8 text-white">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
         <div>
@@ -162,11 +241,13 @@ export default function AdminBlogPage() {
                         Editer
                       </Button>
                     </Link>
-                    <Link href={`/admin/blog/${post.slug}/edit`}>
-                      <Button variant="outline" className="px-3 border-white/10 bg-white/5 hover:bg-rose-500/20 text-rose-400 h-10">
-                        <Trash2 size={16} />
-                      </Button>
-                    </Link>
+                    <Button 
+                      variant="outline" 
+                      className="px-3 border-white/10 bg-white/5 hover:bg-rose-500/20 text-rose-400 h-10"
+                      onClick={() => setDeleteConfirm({ slug: post.slug, title: post.title })}
+                    >
+                      <Trash2 size={16} />
+                    </Button>
                   </div>
                 </div>
               </Card>
@@ -181,6 +262,7 @@ export default function AdminBlogPage() {
         )}
       </div>
     </div>
+    </>
   )
 }
 

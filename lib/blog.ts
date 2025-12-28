@@ -66,3 +66,28 @@ export async function getBlogPostsByCategory(category: string): Promise<BlogPost
   return posts.map(transformBlogToBlogPost)
 }
 
+/**
+ * Fetch recent blog posts for navigation dropdown
+ */
+export async function getRecentBlogPosts(limit: number = 6): Promise<Pick<BlogPost, 'slug' | 'title' | 'description' | 'publishedAt' | 'category'>[]> {
+  await connectDB()
+  const posts = await Blog.find({ isPublished: true })
+    .sort({ publishedAt: -1, createdAt: -1 })
+    .limit(limit)
+    .select('slug title description publishedAt category')
+    .lean()
+  
+  return posts.map((post) => {
+    const blogObj = post as IBlog
+    return {
+      slug: blogObj.slug,
+      title: blogObj.title,
+      description: blogObj.description || '',
+      publishedAt: blogObj.publishedAt 
+        ? (blogObj.publishedAt instanceof Date ? blogObj.publishedAt.toISOString() : String(blogObj.publishedAt))
+        : new Date().toISOString(),
+      category: blogObj.category || '',
+    }
+  })
+}
+
