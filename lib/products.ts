@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from 'next/cache'
 import connectDB from './mongodb'
 import Product, { IProduct } from '@/models/Product'
 import { VespaProduct } from '@/data/vespa'
@@ -72,8 +73,12 @@ export async function getProductBySlug(slug: string): Promise<VespaProduct | nul
 
 /**
  * Fetch featured products
+ * Uses noStore() to prevent caching - featured products change via admin panel
  */
 export async function getFeaturedProducts(limit: number = 2): Promise<VespaProduct[]> {
+  // Prevent caching of featured products since they change frequently via admin
+  noStore()
+  
   await connectDB()
   const products = await Product.find({ 
     isFeaturing: true, 
