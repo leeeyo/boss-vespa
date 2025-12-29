@@ -45,7 +45,7 @@ export function ProductCard({ product }: ProductCardProps) {
             src={product.images[0] as string}
             alt={product.name}
             fill
-            sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+            sizes="(min-width: 1280px) 320px, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
             className="object-cover transition-transform duration-500 group-hover:scale-110"
           />
         </Link>

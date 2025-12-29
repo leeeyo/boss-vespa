@@ -50,7 +50,14 @@ export default function AboutPage() {
               </div>
               <div className="flex-1 relative aspect-square md:aspect-video w-full rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
                 <div className="absolute inset-0 bg-linear-to-tr from-amber-500/20 to-purple-500/20 mix-blend-overlay z-10"></div>
-                <Image src="/images/hero.jpg" alt="Boss Vespa Mahdia" fill priority className="object-cover" />
+                <Image
+                  src="/images/hero.jpg"
+                  alt="Boss Vespa Mahdia"
+                  fill
+                  priority
+                  className="object-cover"
+                  sizes="(min-width: 1024px) 448px, 100vw"
+                />
                 <div className="absolute inset-0 bg-linear-to-tr from-amber-500/20 to-purple-500/20 mix-blend-overlay z-10"></div>
               </div>
             </div>
@@ -82,7 +89,14 @@ export default function AboutPage() {
               <div className="flex-1 relative aspect-square md:aspect-video w-full rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
                 <div className="absolute inset-0 bg-linear-to-tr from-sky-500/20 to-emerald-500/20 mix-blend-overlay z-10"></div>
                  {/* Placeholder for workshop image */}
-                 <Image src="/images/accessory2.png" alt="Boss Vespa Mahdia" fill priority className="object-cover" />
+                 <Image
+                   src="/images/accessory2.png"
+                   alt="Boss Vespa Mahdia"
+                   fill
+                   priority
+                   className="object-cover"
+                   sizes="(min-width: 1024px) 448px, 100vw"
+                 />
               </div>
             </div>
 

@@ -37,7 +37,7 @@ export async function VespaProducts() {
                     src={vespa.images[0] as string}
                     alt={vespa.name}
                     fill
-                    sizes="(min-width: 1024px) 40vw, 100vw"
+                    sizes="(min-width: 1024px) 500px, 100vw"
                     className="object-cover"
                     priority
                   />

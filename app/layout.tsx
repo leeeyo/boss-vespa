@@ -10,8 +10,10 @@ const inter = Inter({
 
 import { StructuredData } from '@/components/structured-data'
 import { Providers } from '@/components/providers'
+import { GoogleAnalytics } from '@/components/google-analytics'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://boss-vespa.tn'
+const gaId = process.env.NEXT_PUBLIC_GA_ID || 'G-KV0T6TZD6L'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -147,6 +149,7 @@ export default function RootLayout({
   return (
     <html lang="fr" data-scroll-behavior="smooth">
       <body className={`${inter.variable} font-sans antialiased`}>
+        {gaId && <GoogleAnalytics GA_MEASUREMENT_ID={gaId} />}
         <StructuredData data={organizationSchema} />
         <StructuredData data={websiteSchema} />
         <Providers>

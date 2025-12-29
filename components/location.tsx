@@ -68,7 +68,7 @@ export function Location() {
                     alt="Showroom Boss Vespa à Mahdia"
                     fill
                     className="object-cover"
-                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    sizes="(min-width: 1024px) 576px, 100vw"
                     priority
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />

@@ -48,7 +48,7 @@ export async function Navigation() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               <Link href="/" aria-label="Accueil Boss Vespa">
-                <Image src="/logo.png" alt="Boss Vespa" width={48} height={48} className="rounded-full hover:scale-120 transition-all duration-300" />
+                <Image src="/logo.png" alt="Boss Vespa" width={48} height={48} className="rounded-full object-cover hover:scale-120 transition-all duration-300" />
               </Link>
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-white/70">Mahdia · Tunisia</p>
