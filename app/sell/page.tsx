@@ -116,10 +116,31 @@ interface FormData {
   images: string[]
 }
 
+// Field error type
+interface FieldErrors {
+  name?: string
+  email?: string
+  phone?: string
+  location?: string
+  brand?: string
+  customBrand?: string
+  scooterModel?: string
+  year?: string
+  color?: string
+  mileage?: string
+  condition?: string
+  askingPrice?: string
+  images?: string
+}
+
+// Email validation regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 export default function SellPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadingImages, setUploadingImages] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -139,7 +160,14 @@ export default function SellPage() {
 
   const updateField = <K extends keyof FormData>(field: K, value: FormData[K]) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    // Clear error for this field when user starts typing
+    if (fieldErrors[field as keyof FieldErrors]) {
+      setFieldErrors(prev => ({ ...prev, [field]: undefined }))
+    }
   }
+
+  // Clear all errors
+  const clearErrors = () => setFieldErrors({})
 
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -208,58 +236,104 @@ export default function SellPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    clearErrors()
 
-    // Validation
+    // Collect all validation errors
+    const errors: FieldErrors = {}
+    let hasErrors = false
+
+    // Name validation
     if (!formData.name.trim()) {
-      toast.error('Veuillez entrer votre nom')
-      return
+      errors.name = 'Le nom est requis'
+      hasErrors = true
+    } else if (formData.name.trim().length < 2) {
+      errors.name = 'Le nom doit contenir au moins 2 caractères'
+      hasErrors = true
     }
+
+    // Email validation
     if (!formData.email.trim()) {
-      toast.error('Veuillez entrer votre email')
-      return
+      errors.email = 'L\'email est requis'
+      hasErrors = true
+    } else if (!EMAIL_REGEX.test(formData.email.trim())) {
+      errors.email = 'Format d\'email invalide'
+      hasErrors = true
     }
+
+    // Phone validation
     if (!formData.phone.trim()) {
-      toast.error('Veuillez entrer votre numéro de téléphone')
-      return
+      errors.phone = 'Le numéro de téléphone est requis'
+      hasErrors = true
+    } else if (formData.phone.trim().length < 8) {
+      errors.phone = 'Le numéro doit contenir au moins 8 chiffres'
+      hasErrors = true
     }
+
+    // Location validation
     if (!formData.location) {
-      toast.error('Veuillez sélectionner votre ville')
-      return
+      errors.location = 'Veuillez sélectionner votre ville'
+      hasErrors = true
     }
+
+    // Brand validation
     if (!formData.brand) {
-      toast.error('Veuillez sélectionner la marque')
-      return
+      errors.brand = 'Veuillez sélectionner la marque'
+      hasErrors = true
     }
     if (formData.brand === 'Autre' && !formData.customBrand.trim()) {
-      toast.error('Veuillez préciser la marque')
-      return
+      errors.customBrand = 'Veuillez préciser la marque'
+      hasErrors = true
     }
+
+    // Model validation
     if (!formData.scooterModel.trim()) {
-      toast.error('Veuillez entrer le modèle')
-      return
+      errors.scooterModel = 'Le modèle est requis'
+      hasErrors = true
     }
+
+    // Year validation
     if (!formData.year) {
-      toast.error('Veuillez sélectionner l\'année')
-      return
+      errors.year = 'Veuillez sélectionner l\'année'
+      hasErrors = true
     }
+
+    // Color validation
     if (!formData.color.trim()) {
-      toast.error('Veuillez entrer la couleur')
-      return
+      errors.color = 'La couleur est requise'
+      hasErrors = true
     }
+
+    // Mileage validation
     if (formData.mileage === '' || formData.mileage < 0) {
-      toast.error('Veuillez entrer le kilométrage')
-      return
+      errors.mileage = 'Le kilométrage est requis'
+      hasErrors = true
     }
+
+    // Condition validation
     if (!formData.condition) {
-      toast.error('Veuillez sélectionner l\'état du scooter')
-      return
+      errors.condition = 'Veuillez sélectionner l\'état du scooter'
+      hasErrors = true
     }
+
+    // Price validation
     if (formData.askingPrice === '' || formData.askingPrice <= 0) {
-      toast.error('Veuillez entrer votre prix demandé')
-      return
+      errors.askingPrice = 'Le prix demandé est requis'
+      hasErrors = true
     }
+
+    // Images validation
     if (formData.images.length === 0) {
-      toast.error('Veuillez ajouter au moins une photo')
+      errors.images = 'Veuillez ajouter au moins une photo'
+      hasErrors = true
+    }
+
+    // If there are validation errors, set them and stop
+    if (hasErrors) {
+      setFieldErrors(errors)
+      toast.error('Veuillez corriger les erreurs dans le formulaire')
+      // Scroll to first error
+      const firstErrorField = document.querySelector('[data-error="true"]')
+      firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       return
     }
 
@@ -291,7 +365,21 @@ export default function SellPage() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         console.error('API Error:', errorData)
-        toast.error('Erreur lors de la soumission. Veuillez réessayer.')
+        
+        // Handle Zod validation errors from API
+        if (errorData.error && Array.isArray(errorData.error)) {
+          const apiErrors: FieldErrors = {}
+          for (const err of errorData.error) {
+            const field = err.path?.[0] as keyof FieldErrors
+            if (field) {
+              apiErrors[field] = err.message
+            }
+          }
+          setFieldErrors(apiErrors)
+          toast.error('Veuillez corriger les erreurs dans le formulaire')
+        } else {
+          toast.error('Erreur lors de la soumission. Veuillez réessayer.')
+        }
         return
       }
 
@@ -340,22 +428,34 @@ export default function SellPage() {
 
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Name */}
-                <div>
-                  <label className="text-sm font-medium text-white/60 mb-1.5 block">Nom complet *</label>
+                <div data-error={!!fieldErrors.name}>
+                  <label className="text-sm font-medium text-white/60 mb-1.5 block">
+                    Nom complet <span className="text-red-400">*</span>
+                  </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                     <Input
                       value={formData.name}
                       onChange={(e) => updateField('name', e.target.value)}
                       placeholder="Votre nom"
-                      className="bg-white/5 border-white/10 pl-10 h-11 text-white placeholder:text-white/30"
+                      className={`bg-white/5 pl-10 h-11 text-white placeholder:text-white/30 ${
+                        fieldErrors.name ? 'border-red-400/60 focus:border-red-400' : 'border-white/10'
+                      }`}
                     />
                   </div>
+                  {fieldErrors.name && (
+                    <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {fieldErrors.name}
+                    </p>
+                  )}
                 </div>
 
                 {/* Email */}
-                <div>
-                  <label className="text-sm font-medium text-white/60 mb-1.5 block">Email *</label>
+                <div data-error={!!fieldErrors.email}>
+                  <label className="text-sm font-medium text-white/60 mb-1.5 block">
+                    Email <span className="text-red-400">*</span>
+                  </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                     <Input
@@ -363,14 +463,24 @@ export default function SellPage() {
                       value={formData.email}
                       onChange={(e) => updateField('email', e.target.value)}
                       placeholder="votre@email.com"
-                      className="bg-white/5 border-white/10 pl-10 h-11 text-white placeholder:text-white/30"
+                      className={`bg-white/5 pl-10 h-11 text-white placeholder:text-white/30 ${
+                        fieldErrors.email ? 'border-red-400/60 focus:border-red-400' : 'border-white/10'
+                      }`}
                     />
                   </div>
+                  {fieldErrors.email && (
+                    <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {fieldErrors.email}
+                    </p>
+                  )}
                 </div>
 
                 {/* Phone */}
-                <div>
-                  <label className="text-sm font-medium text-white/60 mb-1.5 block">Téléphone *</label>
+                <div data-error={!!fieldErrors.phone}>
+                  <label className="text-sm font-medium text-white/60 mb-1.5 block">
+                    Téléphone <span className="text-red-400">*</span>
+                  </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                     <Input
@@ -378,16 +488,28 @@ export default function SellPage() {
                       value={formData.phone}
                       onChange={(e) => updateField('phone', e.target.value)}
                       placeholder="+216 XX XXX XXX"
-                      className="bg-white/5 border-white/10 pl-10 h-11 text-white placeholder:text-white/30"
+                      className={`bg-white/5 pl-10 h-11 text-white placeholder:text-white/30 ${
+                        fieldErrors.phone ? 'border-red-400/60 focus:border-red-400' : 'border-white/10'
+                      }`}
                     />
                   </div>
+                  {fieldErrors.phone && (
+                    <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {fieldErrors.phone}
+                    </p>
+                  )}
                 </div>
 
                 {/* Location */}
-                <div>
-                  <label className="text-sm font-medium text-white/60 mb-1.5 block">Ville *</label>
+                <div data-error={!!fieldErrors.location}>
+                  <label className="text-sm font-medium text-white/60 mb-1.5 block">
+                    Ville <span className="text-red-400">*</span>
+                  </label>
                   <Select value={formData.location} onValueChange={(v) => updateField('location', v)}>
-                    <SelectTrigger className="bg-white/5 border-white/10 h-11 text-white">
+                    <SelectTrigger className={`bg-white/5 h-11 text-white ${
+                      fieldErrors.location ? 'border-red-400/60 focus:border-red-400' : 'border-white/10'
+                    }`}>
                       <MapPin className="w-4 h-4 text-white/30 mr-2" />
                       <SelectValue placeholder="Sélectionnez votre ville" />
                     </SelectTrigger>
@@ -399,6 +521,12 @@ export default function SellPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {fieldErrors.location && (
+                    <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {fieldErrors.location}
+                    </p>
+                  )}
                 </div>
               </div>
             </Card>
@@ -417,10 +545,14 @@ export default function SellPage() {
 
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Brand */}
-                <div>
-                  <label className="text-sm font-medium text-white/60 mb-1.5 block">Marque *</label>
+                <div data-error={!!fieldErrors.brand || !!fieldErrors.customBrand}>
+                  <label className="text-sm font-medium text-white/60 mb-1.5 block">
+                    Marque <span className="text-red-400">*</span>
+                  </label>
                   <Select value={formData.brand} onValueChange={(v) => updateField('brand', v)}>
-                    <SelectTrigger className="bg-white/5 border-white/10 h-11 text-white">
+                    <SelectTrigger className={`bg-white/5 h-11 text-white ${
+                      fieldErrors.brand ? 'border-red-400/60 focus:border-red-400' : 'border-white/10'
+                    }`}>
                       <SelectValue placeholder="Sélectionnez la marque" />
                     </SelectTrigger>
                     <SelectContent className="bg-zinc-900 border-white/10 text-white">
@@ -431,35 +563,65 @@ export default function SellPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {fieldErrors.brand && (
+                    <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {fieldErrors.brand}
+                    </p>
+                  )}
                   {formData.brand === 'Autre' && (
-                    <Input
-                      value={formData.customBrand}
-                      onChange={(e) => updateField('customBrand', e.target.value)}
-                      placeholder="Précisez la marque..."
-                      className="bg-white/5 border-white/10 h-11 text-white placeholder:text-white/30 mt-2"
-                    />
+                    <>
+                      <Input
+                        value={formData.customBrand}
+                        onChange={(e) => updateField('customBrand', e.target.value)}
+                        placeholder="Précisez la marque..."
+                        className={`bg-white/5 h-11 text-white placeholder:text-white/30 mt-2 ${
+                          fieldErrors.customBrand ? 'border-red-400/60 focus:border-red-400' : 'border-white/10'
+                        }`}
+                      />
+                      {fieldErrors.customBrand && (
+                        <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {fieldErrors.customBrand}
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
 
                 {/* Model */}
-                <div>
-                  <label className="text-sm font-medium text-white/60 mb-1.5 block">Modèle *</label>
+                <div data-error={!!fieldErrors.scooterModel}>
+                  <label className="text-sm font-medium text-white/60 mb-1.5 block">
+                    Modèle <span className="text-red-400">*</span>
+                  </label>
                   <Input
                     value={formData.scooterModel}
                     onChange={(e) => updateField('scooterModel', e.target.value)}
                     placeholder="Ex: Primavera 125, PCX 150..."
-                    className="bg-white/5 border-white/10 h-11 text-white placeholder:text-white/30"
+                    className={`bg-white/5 h-11 text-white placeholder:text-white/30 ${
+                      fieldErrors.scooterModel ? 'border-red-400/60 focus:border-red-400' : 'border-white/10'
+                    }`}
                   />
+                  {fieldErrors.scooterModel && (
+                    <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {fieldErrors.scooterModel}
+                    </p>
+                  )}
                 </div>
 
                 {/* Year */}
-                <div>
-                  <label className="text-sm font-medium text-white/60 mb-1.5 block">Année *</label>
+                <div data-error={!!fieldErrors.year}>
+                  <label className="text-sm font-medium text-white/60 mb-1.5 block">
+                    Année <span className="text-red-400">*</span>
+                  </label>
                   <Select 
                     value={formData.year.toString()} 
                     onValueChange={(v) => updateField('year', parseInt(v))}
                   >
-                    <SelectTrigger className="bg-white/5 border-white/10 h-11 text-white">
+                    <SelectTrigger className={`bg-white/5 h-11 text-white ${
+                      fieldErrors.year ? 'border-red-400/60 focus:border-red-400' : 'border-white/10'
+                    }`}>
                       <Calendar className="w-4 h-4 text-white/30 mr-2" />
                       <SelectValue placeholder="Année de fabrication" />
                     </SelectTrigger>
@@ -471,20 +633,36 @@ export default function SellPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {fieldErrors.year && (
+                    <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {fieldErrors.year}
+                    </p>
+                  )}
                 </div>
 
                 {/* Color */}
-                <div>
-                  <label className="text-sm font-medium text-white/60 mb-1.5 block">Couleur *</label>
+                <div data-error={!!fieldErrors.color}>
+                  <label className="text-sm font-medium text-white/60 mb-1.5 block">
+                    Couleur <span className="text-red-400">*</span>
+                  </label>
                   <div className="relative">
                     <Palette className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                     <Input
                       value={formData.color}
                       onChange={(e) => updateField('color', e.target.value)}
                       placeholder="Ex: Rouge, Bleu métallisé..."
-                      className="bg-white/5 border-white/10 pl-10 h-11 text-white placeholder:text-white/30"
+                      className={`bg-white/5 pl-10 h-11 text-white placeholder:text-white/30 ${
+                        fieldErrors.color ? 'border-red-400/60 focus:border-red-400' : 'border-white/10'
+                      }`}
                     />
                   </div>
+                  {fieldErrors.color && (
+                    <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {fieldErrors.color}
+                    </p>
+                  )}
                 </div>
               </div>
             </Card>
@@ -503,8 +681,10 @@ export default function SellPage() {
 
               <div className="space-y-6">
                 {/* Mileage */}
-                <div>
-                  <label className="text-sm font-medium text-white/60 mb-1.5 block">Kilométrage (km) *</label>
+                <div data-error={!!fieldErrors.mileage}>
+                  <label className="text-sm font-medium text-white/60 mb-1.5 block">
+                    Kilométrage (km) <span className="text-red-400">*</span>
+                  </label>
                   <div className="relative">
                     <Gauge className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                     <Input
@@ -513,15 +693,27 @@ export default function SellPage() {
                       value={formData.mileage}
                       onChange={(e) => updateField('mileage', e.target.value ? parseInt(e.target.value) : '')}
                       placeholder="Ex: 15000"
-                      className="bg-white/5 border-white/10 pl-10 h-11 text-white placeholder:text-white/30"
+                      className={`bg-white/5 pl-10 h-11 text-white placeholder:text-white/30 ${
+                        fieldErrors.mileage ? 'border-red-400/60 focus:border-red-400' : 'border-white/10'
+                      }`}
                     />
                   </div>
+                  {fieldErrors.mileage && (
+                    <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {fieldErrors.mileage}
+                    </p>
+                  )}
                 </div>
 
                 {/* Condition */}
-                <div>
-                  <label className="text-sm font-medium text-white/60 mb-3 block">État général *</label>
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div data-error={!!fieldErrors.condition}>
+                  <label className="text-sm font-medium text-white/60 mb-3 block">
+                    État général <span className="text-red-400">*</span>
+                  </label>
+                  <div className={`grid sm:grid-cols-2 lg:grid-cols-4 gap-3 ${
+                    fieldErrors.condition ? 'ring-2 ring-red-400/30 rounded-xl p-1' : ''
+                  }`}>
                     {CONDITION_OPTIONS.map((option) => {
                       const isSelected = formData.condition === option.value
                       return (
@@ -546,6 +738,12 @@ export default function SellPage() {
                       )
                     })}
                   </div>
+                  {fieldErrors.condition && (
+                    <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {fieldErrors.condition}
+                    </p>
+                  )}
                 </div>
               </div>
             </Card>
@@ -564,8 +762,10 @@ export default function SellPage() {
 
               <div className="space-y-6">
                 {/* Asking Price */}
-                <div>
-                  <label className="text-sm font-medium text-white/60 mb-1.5 block">Prix demandé (TND) *</label>
+                <div data-error={!!fieldErrors.askingPrice}>
+                  <label className="text-sm font-medium text-white/60 mb-1.5 block">
+                    Prix demandé (TND) <span className="text-red-400">*</span>
+                  </label>
                   <div className="relative">
                     <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                     <Input
@@ -574,12 +774,21 @@ export default function SellPage() {
                       value={formData.askingPrice}
                       onChange={(e) => updateField('askingPrice', e.target.value ? parseInt(e.target.value) : '')}
                       placeholder="Ex: 8500"
-                      className="bg-white/5 border-white/10 pl-10 h-11 text-white placeholder:text-white/30"
+                      className={`bg-white/5 pl-10 h-11 text-white placeholder:text-white/30 ${
+                        fieldErrors.askingPrice ? 'border-red-400/60 focus:border-red-400' : 'border-white/10'
+                      }`}
                     />
                   </div>
-                  <p className="text-white/30 text-xs mt-1.5">
-                    Indiquez le prix que vous souhaitez obtenir pour votre scooter
-                  </p>
+                  {fieldErrors.askingPrice ? (
+                    <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {fieldErrors.askingPrice}
+                    </p>
+                  ) : (
+                    <p className="text-white/30 text-xs mt-1.5">
+                      Indiquez le prix que vous souhaitez obtenir pour votre scooter
+                    </p>
+                  )}
                 </div>
 
                 {/* Description */}
@@ -597,13 +806,15 @@ export default function SellPage() {
             </Card>
 
             {/* Section 5: Photos */}
-            <Card className="bg-white/5 border-white/10 p-6 md:p-8">
+            <Card className="bg-white/5 border-white/10 p-6 md:p-8" data-error={!!fieldErrors.images}>
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 rounded-xl bg-purple-400/10 flex items-center justify-center">
                   <ImagePlus className="w-5 h-5 text-purple-400" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">Photos du scooter *</h2>
+                  <h2 className="text-xl font-bold text-white">
+                    Photos du scooter <span className="text-red-400">*</span>
+                  </h2>
                   <p className="text-white/40 text-sm">Ajoutez jusqu&apos;à 10 photos (min. 1 requise)</p>
                 </div>
               </div>
@@ -611,7 +822,9 @@ export default function SellPage() {
               {/* Upload Area */}
               <div className="space-y-4">
                 <label className="block">
-                  <div className="border-2 border-dashed border-white/20 rounded-xl p-8 text-center hover:border-purple-400/50 hover:bg-purple-400/5 transition-all cursor-pointer">
+                  <div className={`border-2 border-dashed rounded-xl p-8 text-center hover:border-purple-400/50 hover:bg-purple-400/5 transition-all cursor-pointer ${
+                    fieldErrors.images ? 'border-red-400/60' : 'border-white/20'
+                  }`}>
                     {uploadingImages ? (
                       <div className="flex flex-col items-center gap-3">
                         <Loader2 className="w-10 h-10 text-purple-400 animate-spin" />
@@ -634,6 +847,13 @@ export default function SellPage() {
                     className="hidden"
                   />
                 </label>
+                
+                {fieldErrors.images && (
+                  <p className="text-red-400 text-sm flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4" />
+                    {fieldErrors.images}
+                  </p>
+                )}
 
                 {/* Image Preview Grid */}
                 {formData.images.length > 0 && (
