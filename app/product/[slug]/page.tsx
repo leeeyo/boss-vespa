@@ -22,7 +22,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white overflow-x-hidden">
       <NavigationClientWrapper />
-      <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 pt-header pb-12 md:pb-16 space-y-6 md:space-y-12 overflow-x-hidden">
+      <div className="w-full lg:mt-10 max-w-7xl mx-auto px-3 sm:px-4 pt-header pb-12 md:pb-16 space-y-6 md:space-y-12 overflow-x-hidden">
         {/* Header */}
         <div className="text-center space-y-3 md:space-y-4 pt-4 md:pt-0">
           <p className="text-xs uppercase tracking-[0.3em] md:tracking-[0.5em] text-amber-300">{product.subtitle}</p>
