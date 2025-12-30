@@ -98,6 +98,7 @@ function PersonalizationContent() {
               rawPrice: product.price,
               specs: product.technicalInfo || [],
               images: product.images || [],
+              videos: product.videos || [],
             }
           })
           setProducts(transformed)

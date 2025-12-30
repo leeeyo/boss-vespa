@@ -2,6 +2,7 @@
 
 import MuxPlayer from '@mux/mux-player-react'
 import { cn } from '@/lib/utils'
+import { CSSProperties } from 'react'
 
 export type VideoData = {
   muxAssetId: string
@@ -31,6 +32,12 @@ export function VideoPlayer({
   accentColor = '#f59e0b', // amber-500
   title,
 }: VideoPlayerProps) {
+  const playerStyle: CSSProperties & Record<string, unknown> = {
+    aspectRatio: '4/3' as const,
+    '--controls': controls ? 'visible' : 'none',
+    '--media-accent-color': accentColor,
+  }
+
   return (
     <MuxPlayer
       playbackId={video.playbackId}
@@ -39,12 +46,7 @@ export function VideoPlayer({
       muted={muted}
       loop={loop}
       className={cn('w-full h-full', className)}
-      style={{
-        aspectRatio: '4/3',
-        // @ts-expect-error Mux player CSS custom properties
-        '--controls': controls ? 'visible' : 'none',
-        '--media-accent-color': accentColor,
-      }}
+      style={playerStyle}
       poster={poster}
       title={title}
       thumbnailTime={0}

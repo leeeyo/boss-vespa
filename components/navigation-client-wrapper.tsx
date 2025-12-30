@@ -44,6 +44,7 @@ type ScooterModel = {
     price: string
     specs: Array<{ label: string; value: string }>
     images: string[]
+    videos: Array<{ muxAssetId: string; playbackId: string }>
     productId?: string
   }>
   count: number

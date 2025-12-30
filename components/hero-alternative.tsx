@@ -51,6 +51,7 @@ export function HeroAlternative() {
               price: formattedPrice,
               specs: product.technicalInfo || [],
               images: product.images || [],
+              videos: product.videos || [],
             }
           })
           setVespaProducts(transformed)
