@@ -41,10 +41,9 @@ export function VideoPlayer({
       className={cn('w-full h-full', className)}
       style={{
         aspectRatio: '4/3',
-        // @ts-expect-error Mux player CSS custom properties
         '--controls': controls ? 'visible' : 'none',
         '--media-accent-color': accentColor,
-      }}
+      } as React.CSSProperties & Record<`--${string}`, string>}
       poster={poster}
       title={title}
       thumbnailTime={0}

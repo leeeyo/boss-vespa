@@ -5,6 +5,7 @@ import { NavigationClient } from './navigation-client'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Banknote } from 'lucide-react'
+import { VespaProduct } from '@/data/vespa'
 
 function TopBanner() {
   return (
@@ -34,18 +35,7 @@ function TopBanner() {
 
 type ScooterModel = {
   modelType: string
-  products: Array<{
-    slug: string
-    name: string
-    subtitle: string
-    category: 'scooter' | 'accessory'
-    color: string
-    description: string
-    price: string
-    specs: Array<{ label: string; value: string }>
-    images: string[]
-    productId?: string
-  }>
+  products: VespaProduct[]
   count: number
 }
 

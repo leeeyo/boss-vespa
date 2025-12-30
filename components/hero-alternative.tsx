@@ -51,6 +51,9 @@ export function HeroAlternative() {
               price: formattedPrice,
               specs: product.technicalInfo || [],
               images: product.images || [],
+              videos: product.videos || [],
+              featuredMediaIndex: product.featuredMediaIndex,
+              productId: product._id.toString(),
             }
           })
           setVespaProducts(transformed)
