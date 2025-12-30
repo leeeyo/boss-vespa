@@ -20,6 +20,7 @@ const productSchema = z.object({
   technicalInfo: z.array(z.object({ label: z.string(), value: z.string() })).optional(),
   images: z.array(z.string()).optional(),
   videos: z.array(z.object({ muxAssetId: z.string(), playbackId: z.string() })).optional(),
+  featuredMediaIndex: z.number().int().min(0).optional(),
   compatibility: z.array(z.string()).optional(),
   stock: z.number().optional(),
   isActive: z.boolean().optional(),
@@ -136,6 +137,7 @@ export async function POST(request: NextRequest) {
       stock: validatedData.stock ?? 0,
       isActive: validatedData.isActive ?? true,
       isFeaturing: validatedData.isFeaturing ?? false,
+      featuredMediaIndex: validatedData.featuredMediaIndex,
     })
 
     await product.save()

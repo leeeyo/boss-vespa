@@ -19,9 +19,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Video URL is required' }, { status: 400 })
     }
 
+    // Convert relative URLs to absolute URLs for Mux
+    // Mux requires a full URL (with http:// or https://) to fetch the video
+    let videoUrl = url
+    if (url.startsWith('/')) {
+      // Relative URL - convert to absolute URL
+      const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
+      const host = request.headers.get('host') || 'localhost:3000'
+      videoUrl = `${protocol}://${host}${url}`
+    }
+
     // Create a new asset in Mux
     const asset = await mux.video.assets.create({
-      inputs: [{ url }],
+      inputs: [{ url: videoUrl }],
       playback_policy: playbackPolicy === 'public' ? ['public'] : ['signed'],
       test: process.env.NODE_ENV !== 'production',
     })

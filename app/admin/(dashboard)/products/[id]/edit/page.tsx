@@ -25,7 +25,10 @@ import {
   Upload,
   Lock,
   Check,
-  AlertTriangle
+  AlertTriangle,
+  Video,
+  Play,
+  Circle
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -34,6 +37,11 @@ import { toast } from 'sonner'
 interface TechnicalSpec {
   label: string
   value: string
+}
+
+interface VideoAsset {
+  muxAssetId: string
+  playbackId: string
 }
 
 interface ProductFormData {
@@ -49,6 +57,8 @@ interface ProductFormData {
   description: string
   technicalInfo: TechnicalSpec[]
   images: string[]
+  videos: VideoAsset[]
+  featuredMediaIndex: number
   compatibility: string[]
   stock: string
   isActive: boolean
@@ -114,6 +124,8 @@ export default function EditProductPage() {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadingVideo, setUploadingVideo] = useState(false)
+  const [videoUploadProgress, setVideoUploadProgress] = useState<string>('')
   const [activeSection, setActiveSection] = useState<string>('basic')
   const [scooters, setScooters] = useState<ScooterOption[]>([])
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -132,6 +144,8 @@ export default function EditProductPage() {
     description: '',
     technicalInfo: [],
     images: [],
+    videos: [],
+    featuredMediaIndex: 0,
     compatibility: [],
     stock: '0',
     isActive: true,
@@ -187,6 +201,8 @@ export default function EditProductPage() {
             description: product.description || '',
             technicalInfo: product.technicalInfo || [],
             images: product.images || [],
+            videos: product.videos || [],
+            featuredMediaIndex: product.featuredMediaIndex ?? 0,
             compatibility: product.compatibility || [],
             stock: product.stock?.toString() || '0',
             isActive: product.isActive ?? true,
@@ -276,6 +292,14 @@ export default function EditProductPage() {
 
     try {
       for (const file of Array.from(files)) {
+        // Client-side size check (50MB)
+        const maxSize = 50 * 1024 * 1024
+        if (file.size > maxSize) {
+          const sizeMB = (file.size / (1024 * 1024)).toFixed(1)
+          toast.error(`Le fichier "${file.name}" fait ${sizeMB} Mo. La taille maximale autorisée est de 50 Mo.`)
+          continue
+        }
+
         const formDataUpload = new FormData()
         formDataUpload.append('file', file)
 
@@ -284,19 +308,29 @@ export default function EditProductPage() {
           body: formDataUpload,
         })
 
+        const data = await response.json()
+
         if (!response.ok) {
-          throw new Error('Upload failed')
+          // Show user-friendly error from API
+          toast.error(data.message || data.error || 'Erreur lors du téléchargement')
+          continue
         }
 
-        const data = await response.json()
         setFormData(prev => ({
           ...prev,
           images: [...prev.images, data.url]
         }))
+
+        // Show optimization feedback if image was optimized
+        if (data.wasOptimized && data.compressionRatio > 0) {
+          const originalMB = (data.originalSize / (1024 * 1024)).toFixed(1)
+          const optimizedMB = (data.optimizedSize / (1024 * 1024)).toFixed(1)
+          toast.success(`Image optimisée: ${originalMB}MB → ${optimizedMB}MB (${data.compressionRatio}% de réduction)`)
+        }
       }
       toast.success('Image(s) téléchargée(s) avec succès')
     } catch (error) {
-      toast.error('Erreur lors du téléchargement')
+      toast.error('Erreur de connexion lors du téléchargement. Veuillez réessayer.')
       console.error(error)
     } finally {
       setUploading(false)
@@ -305,9 +339,123 @@ export default function EditProductPage() {
   }
 
   const removeImage = (index: number) => {
+    setFormData(prev => {
+      const newImages = prev.images.filter((_, i) => i !== index)
+      // Adjust featuredMediaIndex if needed
+      let newFeaturedIndex = prev.featuredMediaIndex
+      if (prev.featuredMediaIndex === index) {
+        newFeaturedIndex = 0 // Reset to first media
+      } else if (prev.featuredMediaIndex > index) {
+        newFeaturedIndex = prev.featuredMediaIndex - 1
+      }
+      // If featured was a video, adjust for removed image
+      const totalMedia = newImages.length + prev.videos.length
+      if (newFeaturedIndex >= totalMedia) {
+        newFeaturedIndex = 0
+      }
+      return {
+        ...prev,
+        images: newImages,
+        featuredMediaIndex: newFeaturedIndex,
+      }
+    })
+  }
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setUploadingVideo(true)
+    setVideoUploadProgress('Téléchargement vers le stockage...')
+
+    try {
+      for (const file of Array.from(files)) {
+        // Client-side size check (50MB)
+        const maxSize = 50 * 1024 * 1024
+        if (file.size > maxSize) {
+          const sizeMB = (file.size / (1024 * 1024)).toFixed(1)
+          toast.error(`La vidéo "${file.name}" fait ${sizeMB} Mo. La taille maximale autorisée est de 50 Mo.`)
+          continue
+        }
+
+        // Step 1: Upload to Vercel Blob using dedicated video endpoint
+        const formDataUpload = new FormData()
+        formDataUpload.append('file', file)
+
+        const uploadResponse = await fetch('/api/media/upload-video', {
+          method: 'POST',
+          body: formDataUpload,
+        })
+
+        const uploadData = await uploadResponse.json()
+
+        if (!uploadResponse.ok) {
+          // Show user-friendly error from API
+          toast.error(uploadData.message || uploadData.error || 'Échec du téléchargement vers le stockage')
+          continue
+        }
+
+        setVideoUploadProgress('Traitement de la vidéo avec Mux...')
+
+        // Step 2: Send URL to Mux for processing
+        const muxResponse = await fetch('/api/media/video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: uploadData.url }),
+        })
+
+        if (!muxResponse.ok) {
+          throw new Error('Échec du traitement Mux')
+        }
+
+        const muxData = await muxResponse.json()
+        
+        setFormData(prev => ({
+          ...prev,
+          videos: [...prev.videos, {
+            muxAssetId: muxData.muxAssetId,
+            playbackId: muxData.playbackId,
+          }]
+        }))
+      }
+      toast.success('Vidéo(s) téléchargée(s) avec succès')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Erreur lors du téléchargement de la vidéo')
+      console.error(error)
+    } finally {
+      setUploadingVideo(false)
+      setVideoUploadProgress('')
+      e.target.value = ''
+    }
+  }
+
+  const removeVideo = (index: number) => {
+    setFormData(prev => {
+      const newVideos = prev.videos.filter((_, i) => i !== index)
+      // Adjust featuredMediaIndex if needed
+      const videoMediaIndex = prev.images.length + index
+      let newFeaturedIndex = prev.featuredMediaIndex
+      if (prev.featuredMediaIndex === videoMediaIndex) {
+        newFeaturedIndex = 0 // Reset to first media
+      } else if (prev.featuredMediaIndex > videoMediaIndex) {
+        newFeaturedIndex = prev.featuredMediaIndex - 1
+      }
+      const totalMedia = prev.images.length + newVideos.length
+      if (newFeaturedIndex >= totalMedia) {
+        newFeaturedIndex = 0
+      }
+      return {
+        ...prev,
+        videos: newVideos,
+        featuredMediaIndex: newFeaturedIndex,
+      }
+    })
+  }
+
+  const setFeaturedMedia = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      featuredMediaIndex: index,
     }))
   }
 
@@ -379,6 +527,8 @@ export default function EditProductPage() {
         description: formData.description || undefined,
         technicalInfo: formData.technicalInfo.length > 0 ? formData.technicalInfo : undefined,
         images: formData.images.length > 0 ? formData.images : undefined,
+        videos: formData.videos.length > 0 ? formData.videos : undefined,
+        featuredMediaIndex: formData.featuredMediaIndex,
         isActive: formData.isActive,
         isFeaturing: formData.isFeaturing,
         price: parsedPrice,
@@ -505,7 +655,7 @@ export default function EditProductPage() {
     <div className="min-h-screen pb-32 lg:pb-8">
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-100 flex items-center justify-center p-4">
           <div className="bg-slate-800 border border-white/10 rounded-2xl p-6 max-w-md w-full animate-in zoom-in-95 duration-200">
             <div className="flex items-center gap-4 mb-4">
               <div className="p-3 rounded-full bg-rose-500/20 text-rose-400">
@@ -856,11 +1006,12 @@ export default function EditProductPage() {
               <div className="p-2 rounded-xl bg-emerald-400/10 text-emerald-400">
                 <ImagePlus size={20} aria-hidden="true" />
               </div>
-              Images du produit
+              Médias du produit
             </h2>
 
             {/* Image Upload */}
-            <div className="mb-4">
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-white/60 mb-3">Images</h3>
               <label 
                 htmlFor="imageUpload"
                 className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${
@@ -877,8 +1028,9 @@ export default function EditProductPage() {
                 ) : (
                   <>
                     <Upload className="w-8 h-8 text-white/40 mb-2" aria-hidden="true" />
-                    <span className="text-white/60 text-sm font-bold">Cliquez pour télécharger</span>
-                    <span className="text-white/30 text-xs mt-1">PNG, JPG, WEBP jusqu&apos;à 10MB</span>
+                    <span className="text-white/60 text-sm font-bold">Cliquez pour télécharger des images</span>
+                    <span className="text-white/30 text-xs mt-1"><strong className="text-amber-400/70">WebP, AVIF recommandés</strong> • PNG, JPG acceptés • Max 10MB</span>
+                    <span className="text-white/20 text-xs">Images automatiquement optimisées</span>
                   </>
                 )}
                 <input
@@ -893,36 +1045,172 @@ export default function EditProductPage() {
               </label>
             </div>
 
-            {/* Image Grid */}
-            {formData.images.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                {formData.images.map((img, index) => (
-                  <div key={index} className="relative aspect-square rounded-xl overflow-hidden bg-slate-800 group">
-                    <Image src={img} alt={`Image ${index + 1}`} fill className="object-cover" />
-                    <div className="absolute inset-0 bg-linear-to-t from-slate-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 p-2 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-400"
-                      aria-label={`Supprimer image ${index + 1}`}
-                    >
-                      <X size={16} aria-hidden="true" />
-                    </button>
-                    {index === 0 && (
-                      <span className="absolute bottom-2 left-2 px-2 py-1 bg-amber-400 text-slate-900 rounded-md text-xs font-bold">
-                        Principale
-                      </span>
-                    )}
-                    <div className="absolute bottom-2 right-2 p-1.5 bg-white/20 backdrop-blur rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">
-                      <GripVertical size={14} className="text-white" aria-hidden="true" />
-                    </div>
+            {/* Video Upload */}
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-white/60 mb-3">Vidéos</h3>
+              <label 
+                htmlFor="videoUpload"
+                className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${
+                  uploadingVideo 
+                    ? 'border-purple-400/50 bg-purple-400/5' 
+                    : 'border-white/20 hover:border-purple-400/50 hover:bg-white/5'
+                }`}
+              >
+                {uploadingVideo ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
+                    <span className="text-white/60 text-sm">{videoUploadProgress || 'Traitement en cours...'}</span>
                   </div>
-                ))}
+                ) : (
+                  <>
+                    <Video className="w-8 h-8 text-white/40 mb-2" aria-hidden="true" />
+                    <span className="text-white/60 text-sm font-bold">Cliquez pour télécharger des vidéos</span>
+                    <span className="text-white/30 text-xs mt-1">MP4, MOV, WEBM jusqu&apos;à 100MB</span>
+                  </>
+                )}
+                <input
+                  id="videoUpload"
+                  type="file"
+                  accept="video/*"
+                  multiple
+                  onChange={handleVideoUpload}
+                  disabled={uploadingVideo}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            {/* Featured Media Selection */}
+            {(formData.images.length > 0 || formData.videos.length > 0) && (
+              <div className="mb-6">
+                <h3 className="text-sm font-bold text-white/60 mb-3">Média principal (affiché en premier)</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {/* Images */}
+                  {formData.images.map((img, index) => (
+                    <button
+                      key={`img-${index}`}
+                      type="button"
+                      onClick={() => setFeaturedMedia(index)}
+                      className={`relative aspect-square rounded-xl overflow-hidden bg-slate-800 group transition-all ${
+                        formData.featuredMediaIndex === index 
+                          ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900' 
+                          : 'hover:ring-2 hover:ring-white/30'
+                      }`}
+                    >
+                      <Image src={img} alt={`Image ${index + 1}`} fill className="object-cover" />
+                      <div className="absolute inset-0 bg-linear-to-t from-slate-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute top-2 left-2">
+                        {formData.featuredMediaIndex === index ? (
+                          <div className="p-1.5 bg-amber-400 rounded-full">
+                            <Check size={12} className="text-slate-900" />
+                          </div>
+                        ) : (
+                          <div className="p-1.5 bg-white/20 backdrop-blur rounded-full">
+                            <Circle size={12} className="text-white/60" />
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => { e.stopPropagation(); removeImage(index); }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            removeImage(index);
+                          }
+                        }}
+                        className="absolute top-2 right-2 p-2 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-400 cursor-pointer"
+                        aria-label={`Supprimer image ${index + 1}`}
+                      >
+                        <X size={16} aria-hidden="true" />
+                      </div>
+                      <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
+                        <ImagePlus size={12} className="text-white/60" />
+                        <span className="text-white/60 text-xs">Image</span>
+                      </div>
+                    </button>
+                  ))}
+                  
+                  {/* Videos */}
+                  {formData.videos.map((video, index) => {
+                    const mediaIndex = formData.images.length + index
+                    return (
+                      <button
+                        key={`video-${index}`}
+                        type="button"
+                        onClick={() => setFeaturedMedia(mediaIndex)}
+                        className={`relative aspect-square rounded-xl overflow-hidden bg-slate-800 group transition-all ${
+                          formData.featuredMediaIndex === mediaIndex 
+                            ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900' 
+                            : 'hover:ring-2 hover:ring-white/30'
+                        }`}
+                      >
+                        {/* Video thumbnail from Mux */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={`https://image.mux.com/${video.playbackId}/thumbnail.webp?time=0&width=640`}
+                          alt={`Vidéo ${index + 1}`}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          onError={(e) => {
+                            // Hide image if thumbnail fails (asset might not be ready yet)
+                            const target = e.target as HTMLImageElement
+                            target.style.display = 'none'
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-linear-to-t from-slate-900/80 to-transparent" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="p-3 bg-white/20 backdrop-blur rounded-full">
+                            <Play size={20} className="text-white" />
+                          </div>
+                        </div>
+                        <div className="absolute top-2 left-2">
+                          {formData.featuredMediaIndex === mediaIndex ? (
+                            <div className="p-1.5 bg-amber-400 rounded-full">
+                              <Check size={12} className="text-slate-900" />
+                            </div>
+                          ) : (
+                            <div className="p-1.5 bg-white/20 backdrop-blur rounded-full">
+                              <Circle size={12} className="text-white/60" />
+                            </div>
+                          )}
+                        </div>
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => { e.stopPropagation(); removeVideo(index); }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              removeVideo(index);
+                            }
+                          }}
+                          className="absolute top-2 right-2 p-2 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-400 cursor-pointer"
+                          aria-label={`Supprimer vidéo ${index + 1}`}
+                        >
+                          <X size={16} aria-hidden="true" />
+                        </div>
+                        <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
+                          <Video size={12} className="text-purple-400" />
+                          <span className="text-purple-400 text-xs">Vidéo</span>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+                <p className="text-xs text-white/40 mt-3">
+                  Cliquez sur un média pour le définir comme principal. Le média principal sera affiché en premier dans la galerie du produit.
+                </p>
               </div>
-            ) : (
+            )}
+
+            {/* Empty State */}
+            {formData.images.length === 0 && formData.videos.length === 0 && (
               <div className="text-center py-8 text-white/40">
                 <ImagePlus className="w-12 h-12 mx-auto mb-3 opacity-30" aria-hidden="true" />
-                <p>Aucune image téléchargée</p>
+                <p>Aucun média téléchargé</p>
               </div>
             )}
           </Card>

@@ -11,7 +11,7 @@ export async function VespaProducts() {
   return (
     <section
       id="featured"
-      className="py-20 px-4 bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white border-y border-white/5"
+      className="py-12 md:py-20 px-4 bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white border-y border-white/5"
     >
       <div className="container mx-auto">
         <div className="mb-12 flex flex-col items-center gap-4 text-center overflow-visible">
@@ -25,14 +25,14 @@ export async function VespaProducts() {
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
+        <div className="grid gap-6 md:gap-8 grid-cols-1 lg:grid-cols-2">
           {featured.map((vespa) => (
             <article
               key={vespa.slug}
               className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur shadow-[0_30px_60px_rgba(0,0,0,0.55)] group hover:scale-[1.02] transition-transform duration-300"
             >
               <div className="flex flex-col lg:flex-row">
-                <div className="relative lg:w-2/5 h-64 lg:h-[400px] shrink-0">
+                <div className="relative lg:w-2/5 h-56 md:h-64 lg:h-[400px] shrink-0">
                   <Image
                     src={vespa.images[0] as string}
                     alt={vespa.name}

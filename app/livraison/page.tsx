@@ -80,7 +80,8 @@ export default function LivraisonPage() {
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white">
       <NavigationClientWrapper />
 
-      <main className="container mx-auto px-4 pt-28 pb-12 md:pt-36 md:pb-16">
+      <main className="container mx-auto px-4 pt-header pb-12 md:pb-16">
+        <div className="pt-6 md:pt-8">
         {/* Hero Slideshow */}
         <div className="mb-16">
           <div className="relative max-w-2xl mx-auto">
@@ -218,6 +219,7 @@ export default function LivraisonPage() {
               </Link>
             </Button>
           </div>
+        </div>
         </div>
       </main>
 

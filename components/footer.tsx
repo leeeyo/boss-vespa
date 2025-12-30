@@ -6,7 +6,7 @@ export function Footer() {
       <div className="absolute inset-0 bg-[url('/images/showcase3.jpg')] opacity-10 bg-cover bg-center" />
       <div className="absolute inset-0 bg-black/20" />
 
-      <div className="relative container mx-auto px-15 py-12 md:py-16">
+      <div className="relative container mx-auto px-4 md:px-8 lg:px-15 py-10 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-12 text-center md:text-left">
           {/* Brand Info - Spans 4 columns (Left) */}
           <div className="flex flex-col items-center md:items-start md:col-span-4">

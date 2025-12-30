@@ -37,6 +37,12 @@ export function transformProductToVespaProduct(product: IProduct | Record<string
     return cleanSpec
   })
 
+  // Clean videos array to remove _id fields from nested objects
+  const cleanVideos = (productObj.videos || []).map((video: { muxAssetId?: string; playbackId?: string; _id?: unknown }) => ({
+    muxAssetId: String(video.muxAssetId || ''),
+    playbackId: String(video.playbackId || ''),
+  }))
+
   return {
     slug: productObj.slug,
     name: productObj.name,
@@ -47,6 +53,8 @@ export function transformProductToVespaProduct(product: IProduct | Record<string
     price: formattedPrice,
     specs: cleanSpecs,
     images: productObj.images || [],
+    videos: cleanVideos,
+    featuredMediaIndex: productObj.featuredMediaIndex,
     productId: productObj._id?.toString(),
   }
 }

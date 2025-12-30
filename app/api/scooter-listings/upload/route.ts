@@ -12,10 +12,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    // Validate file type (including AVIF support)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif']
     if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: 'Type de fichier invalide. Seules les images sont autorisées.' }, { status: 400 })
+      return NextResponse.json({ error: 'Type de fichier invalide. Seules les images sont autorisées (JPEG, PNG, WebP, AVIF, GIF).' }, { status: 400 })
     }
 
     // Validate file size (max 10MB)
@@ -25,10 +25,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Upload file using blob storage utility with a specific folder for scooter listings
+    // Optimization happens automatically
     const result = await uploadFile(file, `scooter-listings/${file.name}`, {
       access: 'public',
       addRandomSuffix: true,
       contentType: file.type,
+      optimize: true, // Enable image optimization
     })
 
     return NextResponse.json({
@@ -36,10 +38,14 @@ export async function POST(request: NextRequest) {
       pathname: result.pathname,
       size: result.size,
       uploadedAt: result.uploadedAt,
+      // Optimization metadata
+      originalSize: result.originalSize,
+      optimizedSize: result.optimizedSize,
+      compressionRatio: result.compressionRatio,
+      wasOptimized: result.wasOptimized,
     })
   } catch (error) {
     console.error('Failed to upload file', error)
     return handleError(error, 'Erreur lors de l\'upload du fichier')
   }
 }
-

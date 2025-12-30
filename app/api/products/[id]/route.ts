@@ -20,6 +20,7 @@ const updateProductSchema = z.object({
   technicalInfo: z.array(z.object({ label: z.string(), value: z.string() })).optional(),
   images: z.array(z.string()).optional(),
   videos: z.array(z.object({ muxAssetId: z.string(), playbackId: z.string() })).optional(),
+  featuredMediaIndex: z.number().int().min(0).optional().nullable(),
   compatibility: z.array(z.string()).optional(),
   stock: z.number().int().min(0).optional(),
   isActive: z.boolean().optional(),

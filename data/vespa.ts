@@ -1,3 +1,8 @@
+export type VideoData = {
+  muxAssetId: string
+  playbackId: string
+}
+
 export type VespaProduct = {
   slug: string
   name: string
@@ -11,6 +16,8 @@ export type VespaProduct = {
     value: string
   }[]
   images: string[]
+  videos: VideoData[]
+  featuredMediaIndex?: number // Index of featured media (images first, then videos)
   productId?: string // Backend MongoDB _id for API calls
 }
 
@@ -31,6 +38,7 @@ export const vespaProducts: VespaProduct[] = [
       { label: 'Extras', value: 'Pare-brise sport, sellerie premium' },
     ],
     images: ['/images/green.jpg', '/images/green1.png', '/images/green2.png', '/images/green3.png', '/images/green4.png'],
+    videos: [],
   },
   {
     slug: 'vespa-primavera-125-bianco',
@@ -48,6 +56,7 @@ export const vespaProducts: VespaProduct[] = [
       { label: 'Extras', value: 'Rack arrière, selle bicolore' },
     ],
     images: ['/images/white.jpg', '/images/white1.jpeg', '/images/white2.jpeg', '/images/white3.jpeg'],
+    videos: [],
   },
   {
     slug: 'casque-vespa-vintage',
@@ -62,6 +71,7 @@ export const vespaProducts: VespaProduct[] = [
       { label: 'Taille', value: 'M, L, XL' },
     ],
     images: ['/images/accessory.png'],
+    videos: [],
   },
   {
     slug: 'top-case-vespa',
@@ -76,6 +86,7 @@ export const vespaProducts: VespaProduct[] = [
       { label: 'Fixation', value: 'Support inclus' },
     ],
     images: ['/images/accessory1.png'],
+    videos: [],
   },
   {
     slug: 'pare-brise-haut',
@@ -90,6 +101,7 @@ export const vespaProducts: VespaProduct[] = [
       { label: 'Compatibilité', value: 'Primavera, Sprint' },
     ],
     images: ['/images/accessory2.png'],
+    videos: [],
   },
   {
     slug: 'housse-protection',
@@ -104,6 +116,7 @@ export const vespaProducts: VespaProduct[] = [
       { label: 'Taille', value: 'Universelle' },
     ],
     images: ['/images/accessory3.png'],
+    videos: [],
   },
    {
     slug: 'porte-bagage-arriere',
@@ -118,6 +131,7 @@ export const vespaProducts: VespaProduct[] = [
       { label: 'Charge max', value: '5 kg' },
     ],
     images: ['/images/accessory4.png'],
+    videos: [],
   },
    {
     slug: 'antivol-guidon',
@@ -132,6 +146,7 @@ export const vespaProducts: VespaProduct[] = [
       { label: 'Sécurité', value: 'Niveau 8/10' },
     ],
     images: ['/images/accessory5.png'],
+    videos: [],
   },
   {
     slug: 'poignees-cuir',
@@ -146,6 +161,7 @@ export const vespaProducts: VespaProduct[] = [
       { label: 'Compatibilité', value: 'Universelle' },
     ],
     images: ['/images/accessory6.png'],
+    videos: [],
   },
   {
     slug: 'retroviseurs-embout',
@@ -160,6 +176,7 @@ export const vespaProducts: VespaProduct[] = [
       { label: 'Diamètre', value: '80 mm' },
     ],
     images: ['/images/accessory7.jpg'],
+    videos: [],
   },
   {
     slug: 'sacoche-laterale',
@@ -174,6 +191,7 @@ export const vespaProducts: VespaProduct[] = [
       { label: 'Capacité', value: '15 Litres' },
     ],
     images: ['/images/accessory8.jpg'],
+    videos: [],
   },
 ]
 

@@ -19,9 +19,9 @@ export default function CartPage() {
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white">
       <NavigationClientWrapper />
       
-      <main className="container mx-auto px-4 py-24">
+      <main className="container mx-auto px-4 pt-header pb-12 md:pb-16">
         {/* Header Section */}
-        <div className="text-center mb-12 space-y-4 py-5">
+        <div className="text-center mb-12 space-y-4 py-4 md:py-6">
           <p className="text-xs uppercase tracking-[0.5em] text-amber-300">Mon Panier</p>
           <h1 className="text-4xl md:text-5xl font-black bg-linear-to-r from-amber-400 via-rose-400 to-sky-400 bg-clip-text text-transparent px-2 py-1">
             Votre Panier
@@ -121,7 +121,7 @@ export default function CartPage() {
 
             {/* Summary Section */}
             <div className="lg:col-span-1">
-              <div className="lg:sticky lg:top-24 space-y-6">
+              <div className="lg:sticky lg:top-[calc(var(--header-height)+1rem)] space-y-6">
                 <Card className="border border-white/10 bg-white/5 backdrop-blur shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
                   <CardContent className="p-6 space-y-6">
                     <h3 className="text-xl font-bold text-white">Résumé</h3>

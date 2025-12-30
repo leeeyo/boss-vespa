@@ -27,11 +27,11 @@ export function Hero() {
 
       <div className="relative z-10">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 min-h-[calc(100vh-4rem)] lg:py-18 px-4 lg:px-18">
-            <div className="w-full max-w-2xl text-center lg:text-left space-y-6 lg:order-1 order-2">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-8 lg:gap-12 min-h-[calc(100vh-var(--header-height-mobile))] md:min-h-[calc(100vh-var(--header-height))] pt-28 md:pt-20 lg:pt-12 pb-12 md:pb-16 lg:pb-20 px-4 lg:px-16">
+            <div className="w-full max-w-2xl text-center lg:text-left space-y-6 order-2 lg:order-1 lg:-mt-16">
               <div>
                 <p className="text-sm uppercase tracking-[0.4em] text-amber-300 font-semibold">Boss Vespa</p>
-                <h1 className="text-3xl sm:text-5xl xl:text-6xl font-black text-white leading-tight text-balance">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-black text-white leading-tight text-balance">
                   Découvrez votre Vespa idéale
                 </h1>
               </div>
@@ -75,8 +75,8 @@ export function Hero() {
               </div>
             </div>
 
-            <div className="w-full max-w-xl space-y-4 lg:order-2 order-1 mt-8 lg:mt-0">
-              <div className="grid grid-cols-2 gap-4 my-10">
+            <div className="w-full max-w-xl space-y-4 order-1 lg:order-2 lg:mt-12">
+              <div className="grid grid-cols-2 gap-3 md:gap-4 my-6 md:my-10">
                 <MediaCard>
                   <Image
                     src={heroStill}

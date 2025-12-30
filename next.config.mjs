@@ -19,6 +19,11 @@ const nextConfig = {
         hostname: '**.blob.vercel-storage.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'image.mux.com',
+        pathname: '/**',
+      },
     ],
     unoptimized: false,
   },
@@ -31,6 +36,9 @@ const nextConfig = {
   ],
   // Experimental: Ensure server components external packages work with Turbopack
   experimental: {
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
   },
   // Turbopack configuration
   turbopack: {},

@@ -17,10 +17,10 @@ export default function AboutPage() {
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900 text-white">
       <Navigation />
 
-      <main className="container mx-auto px-4 pt-40 pb-16">
+      <main className="container mx-auto px-4 pt-header pb-12 md:pb-16">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 pt-6 md:pt-0">
             <Badge variant="outline" className="mb-4 border-amber-400/30 text-amber-300 tracking-widest uppercase text-xs px-3 py-1">
               Notre Histoire
             </Badge>
@@ -33,7 +33,7 @@ export default function AboutPage() {
           </div>
 
           {/* Content Sections */}
-          <div className="grid gap-12 md:gap-24">
+          <div className="grid gap-8 md:gap-16 lg:gap-24">
             {/* Section 1: The Passion */}
             <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
               <div className="flex-1 space-y-4">

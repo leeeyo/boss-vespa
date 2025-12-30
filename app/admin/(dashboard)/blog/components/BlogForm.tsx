@@ -139,16 +139,18 @@ export function BlogForm({ mode, initialData, onSuccess }: BlogFormProps) {
   }, [mode, generateSlug, errors])
 
   const handleImageUpload = useCallback(async (file: File) => {
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    // Validate file type (including AVIF support)
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif']
     if (!validTypes.includes(file.type)) {
-      toast.error('Format non supporté. Utilisez JPEG, PNG, WebP ou GIF.')
+      toast.error('Format non supporté. Utilisez JPEG, PNG, WebP, AVIF ou GIF.')
       return
     }
 
-    // Validate file size (10MB max)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Image trop volumineuse. Maximum 10MB.')
+    // Validate file size (50MB max)
+    const maxSize = 50 * 1024 * 1024
+    if (file.size > maxSize) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1)
+      toast.error(`Image trop volumineuse (${sizeMB} Mo). Maximum 50 Mo.`)
       return
     }
 
@@ -162,15 +164,25 @@ export function BlogForm({ mode, initialData, onSuccess }: BlogFormProps) {
         body: formDataUpload,
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        throw new Error('Upload failed')
+        toast.error(data.message || data.error || 'Erreur lors du téléchargement')
+        return
       }
 
-      const { url } = await response.json()
-      handleFieldChange('image', url)
-      toast.success('Image téléchargée avec succès!')
+      handleFieldChange('image', data.url)
+      
+      // Show optimization feedback if image was optimized
+      if (data.wasOptimized && data.compressionRatio > 0) {
+        const originalMB = (data.originalSize / (1024 * 1024)).toFixed(1)
+        const optimizedMB = (data.optimizedSize / (1024 * 1024)).toFixed(1)
+        toast.success(`Image optimisée: ${originalMB}MB → ${optimizedMB}MB (${data.compressionRatio}% de réduction)`)
+      } else {
+        toast.success('Image téléchargée avec succès!')
+      }
     } catch (error) {
-      toast.error('Erreur lors du téléchargement de l\'image')
+      toast.error('Erreur de connexion lors du téléchargement. Veuillez réessayer.')
       console.error('Upload error:', error)
     } finally {
       setUploading(false)
@@ -438,13 +450,14 @@ export function BlogForm({ mode, initialData, onSuccess }: BlogFormProps) {
                     <p className="text-white font-medium">Glissez-déposez une image ici</p>
                     <p className="text-white/40 text-sm">ou cliquez pour sélectionner</p>
                   </div>
-                  <p className="text-white/30 text-xs">JPEG, PNG, WebP, GIF • Max 10MB</p>
+                  <p className="text-white/30 text-xs"><strong className="text-amber-400/70">WebP, AVIF recommandés</strong> • JPEG, PNG, GIF acceptés • Max 10MB</p>
+                  <p className="text-white/20 text-xs">Images automatiquement optimisées</p>
                 </div>
               )}
               <input
                 id="image-upload"
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
+                accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0]

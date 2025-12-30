@@ -95,7 +95,7 @@ export default async function CollectionPage({ searchParams }: CollectionPagePro
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900">
       <Navigation />
 
-      <main className="container mx-auto px-4 py-24">
+      <main className="container mx-auto px-4 pt-header pb-12 md:pb-16">
         {/* Breadcrumb */}
         <Breadcrumb 
           items={[
@@ -160,7 +160,7 @@ export default async function CollectionPage({ searchParams }: CollectionPagePro
         {/* Content Grid */}
         <div className="grid lg:grid-cols-[280px_1fr] gap-8">
           {/* Sidebar Filters (Desktop) */}
-          <div className="hidden lg:block lg:sticky lg:top-24 h-fit">
+          <div className="hidden lg:block lg:sticky lg:top-[calc(var(--header-height)+1rem)] h-fit">
             <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
               <Suspense fallback={<FiltersSkeleton />}>
                 <CollectionFilters

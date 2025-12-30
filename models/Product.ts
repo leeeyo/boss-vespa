@@ -15,6 +15,7 @@ export interface IProduct extends Document {
   technicalInfo: Array<{ label: string; value: string }>
   images: string[]
   videos: Array<{ muxAssetId: string; playbackId: string }>
+  featuredMediaIndex?: number
   compatibility?: string[]
   stock: number
   isActive: boolean
@@ -88,6 +89,9 @@ const ProductSchema = new Schema<IProduct>(
         playbackId: String,
       },
     ],
+    featuredMediaIndex: {
+      type: Number,
+    },
     compatibility: [
       {
         type: String,

@@ -99,9 +99,9 @@ export default function ContactPage() {
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-gray-900">
       <NavigationClientWrapper />
       
-      <main className="container mx-auto px-4 py-24">
+      <main className="container mx-auto px-4 pt-header pb-12 md:pb-16">
         {/* Header Section */}
-        <div className="text-center mb-12 space-y-4 py-5">
+        <div className="text-center mb-12 space-y-4 py-6 md:py-8">
           <p className="text-xs uppercase tracking-[0.5em] text-amber-300">Contact</p>
           <h1 className="text-4xl md:text-6xl font-black bg-linear-to-r from-amber-400 via-rose-400 to-sky-400 bg-clip-text text-transparent px-2 py-1">
             Demander un Devis
@@ -111,7 +111,7 @@ export default function ContactPage() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+        <div className="grid gap-6 md:gap-8 lg:grid-cols-2 max-w-6xl mx-auto">
           {/* Contact Form */}
           <Card className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
             <CardContent className="p-6 md:p-8">
