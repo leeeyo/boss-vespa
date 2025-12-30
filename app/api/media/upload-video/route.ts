@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth, handleError } from '@/lib/api-helpers'
 import { uploadFile } from '@/lib/blob-storage'
 
-// Maximum file size: 500MB for videos
-const MAX_FILE_SIZE = 500 * 1024 * 1024
+// Maximum file size: 4MB to stay under Vercel's 4.5MB API route limit
+// Note: Vercel API routes have a 4.5MB body size limit regardless of plan
+const MAX_FILE_SIZE = 4 * 1024 * 1024 // 4MB
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           error: 'La vidéo est trop volumineuse',
-          message: 'La taille maximale autorisée est de 500 Mo. Veuillez compresser votre vidéo ou en choisir une plus petite.',
+          message: 'La taille maximale autorisée est de 4 Mo en raison des limitations de l\'API Vercel. Veuillez compresser votre vidéo ou utiliser un fichier plus petit.',
           code: 'FILE_TOO_LARGE'
         }, 
         { status: 413 }
@@ -73,10 +74,10 @@ export async function POST(request: NextRequest) {
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       const sizeMB = (file.size / (1024 * 1024)).toFixed(1)
-      return NextResponse.json(
+        return NextResponse.json(
         { 
           error: 'Vidéo trop volumineuse',
-          message: `Votre vidéo fait ${sizeMB} Mo. La taille maximale autorisée est de 500 Mo.`,
+          message: `Votre vidéo fait ${sizeMB} Mo. La taille maximale autorisée est de 4 Mo en raison des limitations de l'API Vercel. Veuillez compresser votre vidéo.`,
           code: 'FILE_TOO_LARGE'
         }, 
         { status: 413 }

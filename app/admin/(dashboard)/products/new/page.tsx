@@ -299,11 +299,15 @@ export default function AddProductPage() {
 
     try {
       for (const file of Array.from(files)) {
-        // Client-side size check (50MB)
-        const maxSize = 50 * 1024 * 1024
+        // Client-side size check (4MB to stay under Vercel's 4.5MB API route limit)
+        // Note: Vercel API routes have a 4.5MB body size limit
+        const maxSize = 4 * 1024 * 1024 // 4MB
         if (file.size > maxSize) {
           const sizeMB = (file.size / (1024 * 1024)).toFixed(1)
-          toast.error(`La vidéo "${file.name}" fait ${sizeMB} Mo. La taille maximale autorisée est de 50 Mo.`)
+          toast.error(
+            `La vidéo "${file.name}" fait ${sizeMB} Mo. La taille maximale autorisée est de 4 Mo en raison des limitations de l'API. Veuillez compresser votre vidéo ou utiliser un fichier plus petit.`,
+            { duration: 6000 }
+          )
           continue
         }
 
@@ -316,11 +320,26 @@ export default function AddProductPage() {
           body: formDataUpload,
         })
 
-        const uploadData = await uploadResponse.json()
+        let uploadData
+        try {
+          uploadData = await uploadResponse.json()
+        } catch (jsonError) {
+          // If response is not JSON (likely a 413 error with HTML response)
+          if (uploadResponse.status === 413) {
+            toast.error(
+              'Le fichier est trop volumineux. La limite est de 4 Mo pour les uploads via l\'API. Veuillez compresser votre vidéo.',
+              { duration: 6000 }
+            )
+          } else {
+            toast.error('Erreur lors du téléchargement. Veuillez réessayer.')
+          }
+          continue
+        }
 
         if (!uploadResponse.ok) {
           // Show user-friendly error from API
-          toast.error(uploadData.message || uploadData.error || 'Échec du téléchargement vers le stockage')
+          const errorMessage = uploadData.message || uploadData.error || 'Échec du téléchargement vers le stockage'
+          toast.error(errorMessage, { duration: 6000 })
           continue
         }
 
